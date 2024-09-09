@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login page</title>
+        <link rel="stylesheet" href="styles/login.css">
+    </head>
+    <body>
+        <%- include("partials/header") %>
+        <main>
+            <input type="text" name="username" id="usernameInput" placeholder="Brukernavn" maxlength="16" minlength="3" required>
+            <input type="password" name="password" id="password" placeholder="Passord" minlength="4" maxlength="30" required>
+            <button id="submitBtn">Logg inn</button>
+        </main>
+        <p id="errorMsg"></p>
+        <script src="js/loginScript.js"></script>
+    </body>
+</html>

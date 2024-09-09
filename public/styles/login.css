@@ -1,0 +1,48 @@
+main{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    justify-content: center;
+    height: 50%;
+    align-items: center;
+    margin: auto;
+}
+
+input{
+    display: block;
+    width: 95%;
+    background-color: transparent;
+    border: none;
+    color: aliceblue;
+    border-bottom: 2px solid;
+    font-size: 1.3rem;
+    padding: 10px 10px 10px 0;
+}
+
+input:focus{
+    color: aquamarine;
+    outline: none;
+}
+
+#submitBtn{
+    background-color: #FFFFFF19;
+    color: aliceblue;
+    border: 2px solid;
+    border-radius: 25px;
+    width: 80%;
+    height: 100px;
+    cursor: pointer;
+}
+
+#submitBtn:hover{
+    color: aquamarine;
+    background-color: #FFFFFF44;
+}
+
+#errorMsg{
+    color: yellow;
+    display: none;
+    width: 100%;
+    text-align: center;
+}
