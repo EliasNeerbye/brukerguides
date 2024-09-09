@@ -16,3 +16,49 @@ html, body{
     color: white;
     background-color: darkorange;
 }
+
+#navbar{
+    display: flex;
+    width: 70%;
+    justify-content: space-between;
+    align-items: center;
+    margin: auto;
+    padding-top: 10px;
+    height: 50px;
+}
+
+
+#navLogoDiv{
+    height: 100%;
+    aspect-ratio: 1/1;
+}
+
+#navLogo{
+    max-height: 100%;
+}
+
+#homeLink{
+    color: aliceblue;
+    text-decoration: none;
+}
+
+#homeLink:hover{
+    color: aquamarine;
+    text-decoration: underline;
+}
+
+#loginBtn{
+    height: 50%;
+    padding: 0 20px 0 20px;
+    background-color: #FFFFFF19;
+    color: aliceblue;
+    border: 1px solid;
+    border-radius: 10px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+#loginBtn:hover{
+    background-color: #FFFFFF44;
+    color: aquamarine;
+}

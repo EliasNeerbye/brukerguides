@@ -1,0 +1,15 @@
+<header id="navbar">
+    <link rel="stylesheet" href="styles/header.css">
+    <div id="navLogoDiv"><img src="assets/favicon.ico" id="navLogo"></div>
+    <a href="/" id="homeLink">Guides</a>
+    <button id="loginBtn">Logg inn</button>
+</header>
+<script>
+    function addUnderline(){
+        document.getElementById("homeLink").style.textDecoration = "underline";
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        window.location.href = "/login";
+    })
+</script>

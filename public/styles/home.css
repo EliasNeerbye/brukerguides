@@ -1,0 +1,67 @@
+main{
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    align-items: center;
+    gap: 50px;
+}
+
+#searchBar{
+    width: 50%;
+    padding-bottom: 5px;
+    border-bottom: 2px solid aliceblue;
+    display: flex;
+    justify-content: space-between;
+    height: 25px;
+}
+
+#searchInput{
+    background-color: transparent;
+    border: none;
+    color: aliceblue;
+    display: block;
+    width: 90%;
+}
+
+#searchInput:focus{
+    outline: none;
+    color: aquamarine;
+}
+
+#searchBar:focus-within{
+    border-bottom-color: aquamarine;
+}
+
+#searchBar img{
+    cursor: pointer;
+    max-height: 80%;
+}
+
+#guideList{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.guideDisplay{
+    flex-grow: 1;
+    background-color: #FFFFFF19;
+    border: 2px solid;
+    color: lime;
+    cursor: pointer;
+    width: 22.5%;
+    min-width: 200px;
+    padding: 20px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+}
+
+.guideDisplay:hover{
+    background-color: #FFFFFF44;
+    color: aquamarine;
+}
