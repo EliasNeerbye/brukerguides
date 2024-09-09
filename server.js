@@ -96,6 +96,10 @@ app.get('/dashboard', (req, res) => {
     res.render('dashboard');
 });
 
+app.get('/guide/:id', (req, res) => {
+    res.render('guide.ejs');
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

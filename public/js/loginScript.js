@@ -1,4 +1,15 @@
 document.getElementById('submitBtn').addEventListener('click', function () {
+    loginUser();
+});
+
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        loginUser();
+    }
+});
+
+
+function loginUser() {
     // Get input values
     const usernameInput = document.getElementById('usernameInput').value;
     const passwordInput = document.getElementById('password').value;
@@ -63,4 +74,4 @@ document.getElementById('submitBtn').addEventListener('click', function () {
         errorMsg.style.display = "block";
         console.error('There was a problem with the fetch operation:', error);
     });
-});
+}
