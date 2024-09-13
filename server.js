@@ -41,6 +41,38 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
+// Signup route to create a default user
+// app.get('/signup/default', async (req, res) => {
+//     const defaultUsername = 'Blank';
+//     const defaultPassword = 'Isja54321';  // You can set any password you like
+
+//     try {
+//         // Check if the user already exists
+//         const existingUser = await User.findOne({ username: defaultUsername });
+//         if (existingUser) {
+//             return res.status(400).json({ success: false, message: 'Default user already exists.' });
+//         }
+
+//         // Hash the default password
+//         const salt = await bcrypt.genSalt(10);
+//         const passwordHash = await bcrypt.hash(defaultPassword, salt);
+
+//         // Create and save the default user
+//         const newUser = new User({
+//             username: defaultUsername,
+//             passwordHash
+//         });
+
+//         await newUser.save();
+
+//         res.json({ success: true, message: 'Default user created successfully.' });
+//     } catch (error) {
+//         console.error('Error during default user creation:', error);
+//         res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+//     }
+// });
+
+
 app.get('/login', (req, res) => {
     if (req.session.user) {
         return res.redirect('/dashboard');
@@ -96,9 +128,34 @@ app.get('/dashboard', (req, res) => {
     res.render('dashboard');
 });
 
-app.get('/guide/:id', (req, res) => {
-    res.render('guide.ejs');
+app.get('/guide/:id', async (req, res) => {
+    return res.render('guide'); // For making guide layout
+
+    // const guideId = req.params.id;  // Extract the dynamic 'id' from the URL
+    // const defaultGuideId = 'defaultGuideId';  // Set a default guide ID
+    // try {
+    //     // Simulate fetching guide from a database (replace with actual DB query)
+    //     let guide = await Guide.findById(guideId);
+
+    //     if (!guide) {
+    //         // If the guide isn't found, fetch the default guide
+    //         guide = await Guide.findById(defaultGuideId);
+
+    //         if (!guide) {
+    //             return res.status(404).send('Default guide not found either.');
+    //         }
+    //     }
+
+    //     // Render the guide view with the found or default guide
+    //     res.render('guide', { guide });
+
+    // } catch (error) {
+    //     console.error('Error fetching guide:', error);
+    //     res.status(500).send('Server error. Please try again later.');
+    // }
 });
+
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
