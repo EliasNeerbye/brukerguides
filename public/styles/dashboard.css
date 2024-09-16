@@ -1,4 +1,4 @@
-main{
+main, #guideForm{
     width: 90%;
     margin: auto;
     display: flex;
@@ -6,6 +6,11 @@ main{
     align-items: center;
     gap: 20px;
 }
+
+#guideForm{
+    width: 100%;
+}
+
 
 #editIdSection{
     display: flex;

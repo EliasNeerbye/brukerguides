@@ -4,7 +4,7 @@ const divCounts = {}; // Object to keep track of div counts for each section
 // Function to add a new section dynamically
 function addSection() {
     if (confirm("Are you sure you want to add another section?")) {
-        const main = document.getElementById("main");
+        const main = document.getElementById("guideForm");
         
         sectionCount++; // Increment the section count
         const newSectionId = `section${sectionCount}`;
@@ -26,10 +26,12 @@ function addSection() {
         // Create buttons for adding divs and deleting the section
         const addDivButton = document.createElement("button");
         addDivButton.textContent = "Add div";
+        addDivButton.type = "button"
         addDivButton.onclick = () => addDiv(newSectionId);
 
         const deleteSectionButton = document.createElement("button");
         deleteSectionButton.textContent = "Delete section";
+        deleteSectionButton.type = "button"
         deleteSectionButton.onclick = () => deleteSection(newSectionId);
 
         // Create a div for the buttons
@@ -89,7 +91,12 @@ function addDiv(sectionId) {
     const imageLabel = document.createElement("label");
     imageLabel.setAttribute("for", `${sectionId}Img${divCount}`);
     imageLabel.classList.add("sectionImgLabel");
-    imageLabel.textContent = "Select Image"; // Label text
+
+    const imageLabelText = document.createElement("p");
+    imageLabelText.textContent = "Select Image";
+
+
+    imageLabel.appendChild(imageLabelText);
 
     const imageInput = document.createElement("input");
     imageInput.type = "file";
@@ -104,6 +111,7 @@ function addDiv(sectionId) {
     // Create a button to delete this div
     const deleteDivButton = document.createElement("button");
     deleteDivButton.textContent = "Delete div";
+    deleteDivButton.type = "button"
     deleteDivButton.onclick = () => deleteDiv(sectionId, newDivId);
 
     // Append paragraphDiv, imageLabel, and deleteDivButton to the new div
@@ -128,13 +136,5 @@ function deleteDiv(sectionId, divId) {
     if (confirm("Are you sure you want to delete this div?")) {
         const div = document.getElementById(divId);
         div.remove();
-    }
-}
-
-// Function to handle file changes (update as needed)
-function handleFileChange(input) {
-    const file = input.files[0];
-    if (file) {
-        console.log(`Selected file: ${file.name}`);
     }
 }
