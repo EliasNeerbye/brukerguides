@@ -69,7 +69,7 @@ function addDiv(sectionId) {
     const paragraphDiv = document.createElement("div");
     paragraphDiv.classList.add("sectionParagraph");
 
-    const paragraphInput = document.createElement("input");
+    const paragraphInput = document.createElement("textarea");
     paragraphInput.type = "text";
     paragraphInput.name = `${sectionId}P${divCount}`;
     paragraphInput.id = `${sectionId}P${divCount}`;
