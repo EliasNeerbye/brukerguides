@@ -157,6 +157,17 @@ app.get('/guide/:id', async (req, res) => {
 
 
 
+app.post('/your-server-endpoint', (req, res) => {
+    const { title, sections } = req.body;
+
+    // Process the guide title and sections data
+    console.log('Guide title:', title);
+    console.log('Sections data:', sections);
+
+    res.json({ message: 'Data received successfully' });
+});
+
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
