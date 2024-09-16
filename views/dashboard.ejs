@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="/styles/dashboard.css">
+    </head>
+    <body>
+        <%- include("partials/header") %>
+        <main id="main">
+            <section id="editIdSection">
+                <div>
+                    <label for="editId">Edit ID: </label>
+                    <input type="text" name="editId" id="editId" placeholder="CoolID">
+                </div>
+                <button id="editIdLoader" onclick="loadEditId()">Edit</button>
+            </section>
+            <input type="text" name="title" id="title" placeholder="Title">
+            <section id="section1" class="aSection">
+                <input type="text" name="section1H2" class="header2" id="section1H2" placeholder="Header">
+                <div class="addDelBtnsDiv">
+                    <button onclick="addDiv('section1')">Add div</button>
+                    <button onclick="deleteSection('section1')">Delete section</button>
+                </div>
+                <div id="section1Div1" class="sectionContent">
+                    <div class="sectionParagraph">
+                        <textarea name="section1P1" id="section1P1" placeholder="Paragraph"></textarea>
+                        <input type="text" name="section1P1Id" id="section1P1Id" class="idInput" placeholder="Id?">
+                    </div>
+                    <label for="section1Img1" class="sectionImgLabel"><input type="file" name="section1Img1" onchange="handleFileChange(this)" class="sectionImageInput" id="section1Img1" title="Image">Select Image</label>
+                    <button onclick="deleteDiv('section1', 'section1Div1')">Delete div</button>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <button onclick="addSection()">Add section</button>
+            <button onclick="finished()">Finish!</button>
+        </footer>
+        <script src="/js/dynamicCreationDashboard.js"></script>
+        <script>
+            function handleFileChange(elem) {
+                if (elem.files.length > 0) {
+                    // File has been selected
+                    elem.parentElement.style.borderStyle = "solid";
+                    elem.parentElement.style.width = "90%";
+                    elem.parentElement.style.fontSize = "0.7rem";
+                    elem.parentElement.style.alignSelf = "center"
+                    elem.parentElement.innerText = elem.files[0].name + " selected";
+                }
+            }
+        </script>
+    </body>
+</html>
