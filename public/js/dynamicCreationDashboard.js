@@ -131,74 +131,10 @@ function deleteDiv(sectionId, divId) {
     }
 }
 
-// Function to gather all the data and send it to the server
-function finished() {
-    const guideTitle = document.getElementById('title').value; // Get the guide title from the input
-    const sections = document.querySelectorAll('section.aSection');
-    const data = {
-        title: guideTitle, // Include the guide title
-        sections: []
-    };
-
-    sections.forEach(section => {
-        const sectionData = {
-            heading: section.querySelector('input.header2')?.value || '',
-            parts: []
-        };
-
-        const divs = section.querySelectorAll('div.sectionContent');
-        divs.forEach(div => {
-            const partData = {
-                heading: sectionData.heading,
-                content: []
-            };
-
-            const paragraphs = div.querySelectorAll('div.sectionParagraph');
-            paragraphs.forEach(paragraph => {
-                const pInput = paragraph.querySelector('input[name$="P"]');
-                const idInput = paragraph.querySelector('input[name$="PId"]');
-                if (pInput) {
-                    partData.content.push({
-                        type: 'p',
-                        value: pInput.value,
-                        id: idInput ? idInput.value : undefined
-                    });
-                }
-            });
-
-            const imageInput = div.querySelector('input[type="file"]');
-            if (imageInput && imageInput.files.length > 0) {
-                const file = imageInput.files[0];
-                partData.content.push({
-                    type: 'img',
-                    value: URL.createObjectURL(file),
-                    alt: file.name
-                });
-            }
-
-            sectionData.parts.push(partData);
-        });
-
-        data.sections.push(sectionData);
-    });
-
-    // Send data to the server
-    fetch('/your-server-endpoint', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data) // Directly send the data object
-    })
-    .then(response => response.json())
-    .then(result => {
-        // Handle the response from the server
-        console.log('Success:', result);
-        alert('Data successfully sent to the server.');
-    })
-    .catch(error => {
-        // Handle errors
-        console.error('Error:', error);
-        alert('An error occurred while sending data.');
-    });
+// Function to handle file changes (update as needed)
+function handleFileChange(input) {
+    const file = input.files[0];
+    if (file) {
+        console.log(`Selected file: ${file.name}`);
+    }
 }
