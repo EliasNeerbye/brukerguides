@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Example Guide</title>
+        <link rel="stylesheet" href="/styles/guide.css">
+    </head>
+    <body>
+        <%- include("partials/header") %>
+        <section id="sideBar">
+            <a href="#top" class="a1">Example guide header</a>
+                <a href="#sectionExampleH2" class="a2">Example guide section header</a>
+                <a href="#sectionExampleH2-2" class="a2">Second example guide section header</a>
+                    <a href="#spesificPartOfSectionExample" class="a3">Spesific part of section example</a>
+        </section>
+        <main>
+            <h1 id="top">Example guide header</h1>
+            <h2 id="sectionExampleH2">Example section h2</h2>
+            <section class="parent1">
+                <p class="guideText textArea1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium vel quis repellat odit ea nam aspernatur officiis praesentium corrupti. Aliquam consequuntur soluta amet exercitationem vel omnis, hic nam cupiditate magnam.</p>
+                <div class="guideImgDiv imageArea1"><img src="https://picsum.photos/360/640" alt="Very describing image"></div>
+            </section>
+            <h2 id="sectionExampleH2-2">Second example section h2</h2>
+            <section class="parent2">
+                <p class="guideText textArea2" id="spesificPartOfSectionExample">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium vel quis repellat odit ea nam aspernatur officiis praesentium corrupti. Aliquam consequuntur soluta amet exercitationem vel omnis, hic nam cupiditate magnam.</p>
+                <div class="guideImgDiv imageArea2"><img src="https://picsum.photos/360/640" alt="Very describing image"></div>
+            </section>
+            <section class="parent1">
+                <p class="guideText textArea1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium vel quis repellat odit ea nam aspernatur officiis praesentium corrupti. Aliquam consequuntur soluta amet exercitationem vel omnis, hic nam cupiditate magnam.</p>
+                <div class="guideImgDiv imageArea1"><img src="https://picsum.photos/360/640" alt="Very describing image"></div>
+            </section>
+        </main>
+    </body>
+</html>

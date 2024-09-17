@@ -42,9 +42,27 @@ app.use(session({
 }));
 
 
-app.get('/', (req, res) => {
-    res.render('index');
+// Route to render the index page with a list of guides
+app.get('/', async (req, res) => {
+    try {
+        // Fetch all guides from the database
+        const guides = await Guide.find();
+
+        // Transform the guide data into a list of objects with id and title
+        const guideList = guides.map(guide => ({
+            id: guide._id,
+            name: guide.title
+        }));
+
+        // Render the index view with the list of guides
+        res.render('index', { guides: guideList });
+    } catch (err) {
+        // Handle errors (e.g., database errors)
+        console.error(err);
+        res.status(500).send('Server error');
+    }
 });
+
 
 // Signup route to create a default user
 // app.get('/signup/default', async (req, res) => {
@@ -133,31 +151,35 @@ app.get('/dashboard', (req, res) => {
     res.render('dashboard');
 });
 
+
+
+// Route to render a specific guide based on ID
 app.get('/guide/:id', async (req, res) => {
-    return res.render('guide'); // For making guide layout
+    try {
+        // Extract the guide ID from the request parameters
+        const guideId = req.params.id;
 
-    // const guideId = req.params.id;  // Extract the dynamic 'id' from the URL
-    // const defaultGuideId = 'defaultGuideId';  // Set a default guide ID
-    // try {
-    //     // Simulate fetching guide from a database (replace with actual DB query)
-    //     let guide = await Guide.findById(guideId);
+        // Fetch the guide from the database using the ID
+        const guide = await Guide.findById(guideId).exec();
 
-    //     if (!guide) {
-    //         // If the guide isn't found, fetch the default guide
-    //         guide = await Guide.findById(defaultGuideId);
+        // Check if the guide was found
+        if (!guide) {
+            return res.status(404).send('Guide not found');
+        }
 
-    //         if (!guide) {
-    //             return res.status(404).send('Default guide not found either.');
-    //         }
-    //     }
+        // Render the guide view with the retrieved guide data
+        res.render('guide', { guide });
+    } catch (err) {
+        // Handle errors, e.g., database errors
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
 
-    //     // Render the guide view with the found or default guide
-    //     res.render('guide', { guide });
 
-    // } catch (error) {
-    //     console.error('Error fetching guide:', error);
-    //     res.status(500).send('Server error. Please try again later.');
-    // }
+
+app.get('/guide', async (req, res) => {
+    return res.render("guideDefault");
 });
 
 app.post("/makeGuide", async (req, res) => {
@@ -186,7 +208,7 @@ app.post("/makeGuide", async (req, res) => {
 
         while (files[`section${sectionIndex}Img${imageIndex}`]) {
             const file = files[`section${sectionIndex}Img${imageIndex}`];
-            const filePath = `./uploads/${file.name}`;
+            const filePath = `./public/uploads/${file.name}`;
             await file.mv(filePath); // Save the file to disk
             images.push({
             url: `/uploads/${file.name}`,
@@ -219,6 +241,19 @@ app.post("/makeGuide", async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+
+// 404 Error Handler (catch-all for unhandled routes)
+app.use((req, res, next) => {
+    res.status(404).render('404', { title: 'Page Not Found' });
+});
+
+// 500 Error Handler (catch-all for server errors)
+app.use((err, req, res, next) => {
+    console.error(err.stack); // Log the error stack for debugging
+    res.status(500).render('500', { title: 'Internal Server Error', error: err });
+});
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

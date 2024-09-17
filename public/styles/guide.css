@@ -80,7 +80,7 @@ h2{
     margin-top: 20px;
 }
 
-.parentOne, .parentTwo{
+.parent1, .parent2{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 2fr;
@@ -92,13 +92,13 @@ h2{
 }
 
 
-.parentOne {
+.parent1 {
     grid-template-areas:
     "textOne textOne imageOne"
     ;
 }
 
-.parentTwo {
+.parent2 {
     grid-template-areas:
     "imageTwo textTwo textTwo"
     ;
@@ -112,6 +112,7 @@ h2{
 .guideText{
     display: block;
     width: 100%;
+    text-align: center;
 }
 
 .guideImgDiv{
