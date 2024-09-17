@@ -18,7 +18,7 @@ const SectionSchema = new mongoose.Schema({
 const GuideSchema = new mongoose.Schema({
   title: { type: String, required: true },
   sections: [SectionSchema]
-});
+}, { timestamps: true });
 
 const Guide = mongoose.model('Guide', GuideSchema);
 
