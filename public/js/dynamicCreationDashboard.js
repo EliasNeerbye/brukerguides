@@ -1,14 +1,14 @@
-let sectionCount = 1; // Initialize the section count
+let sectionCount = 0; // Initialize the section count
 const divCounts = {}; // Object to keep track of div counts for each section
 
 // Function to add a new section dynamically
 function addSection() {
-    if (confirm("Are you sure you want to add another section?")) {
+    if (sectionCount == 0 || confirm("Are you sure you want to add another section?")) {
         const main = document.getElementById("guideForm");
         
         sectionCount++; // Increment the section count
         const newSectionId = `section${sectionCount}`;
-        divCounts[newSectionId] = 1; // Initialize the div count for the new section
+        divCounts[newSectionId] = 0; // Initialize the div count for the new section
 
         // Create a new section element
         const newSection = document.createElement("section");
@@ -55,7 +55,7 @@ function addDiv(sectionId) {
     const section = document.getElementById(sectionId);
     
     if (!divCounts[sectionId]) {
-        divCounts[sectionId] = 1; // Initialize div count if not done already
+        divCounts[sectionId] = 0; // Initialize div count if not done already
     }
 
     divCounts[sectionId]++; // Increment the div count for this section
@@ -107,6 +107,14 @@ function addDiv(sectionId) {
     imageInput.onchange = () => handleFileChange(imageInput); // Adjust handler if necessary
 
     imageLabel.appendChild(imageInput); // Append image input to label
+
+    const imgUrlInput = document.createElement("input");
+    imgUrlInput.type = "hidden";
+    imgUrlInput.name = `${sectionId}Img${divCount}Url`; // Generate name based on section and index
+    imgUrlInput.id = `${sectionId}Img${divCount}Url`; // Generate ID based on section and index
+    imgUrlInput.value = ""; // Initialize with an empty value; set it elsewhere
+
+    imageLabel.appendChild(imgUrlInput);
 
     // Create a button to delete this div
     const deleteDivButton = document.createElement("button");

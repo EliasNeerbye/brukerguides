@@ -14,7 +14,9 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(favicon('public/assets/favicon.ico'));
-app.use(fileUpload());
+app.use(fileUpload({
+    createParentPath: true // Create parent directories if they do not exist
+}));
 
 
 const User = require("./models/user");
@@ -158,154 +160,65 @@ app.get('/guide/:id', async (req, res) => {
     // }
 });
 
+app.post("/makeGuide", async (req, res) => {
+    try {
+        const { title, ...body } = req.body;
+        const files = req.files;
 
-// Helper function to validate non-empty fields
-function validateFields(data) {
-    if (!data.title) {
-        return false;
-    }
+        const sections = [];
+        let sectionIndex = 1;
 
-    const parts = [];
-    let partIndex = 1;
+        while (body[`section${sectionIndex}H2`]) {
+        const sectionHeader = body[`section${sectionIndex}H2`];
+        const paragraphs = [];
+        const images = [];
+        let paragraphIndex = 1;
+        let imageIndex = 1;
 
-    while (data[`section${partIndex}H2`]) {
-        const heading = data[`section${partIndex}H2`];
-        const content = [];
-
-        let contentIndex = 1;
-        while (data[`section${partIndex}P${contentIndex}`]) {
-            content.push({
-                type: 'p',
-                value: data[`section${partIndex}P${contentIndex}`],
-                id: data[`section${partIndex}P${contentIndex}Id`] || null
+        while (body[`section${sectionIndex}P${paragraphIndex}`]) {
+            paragraphs.push({
+            text: body[`section${sectionIndex}P${paragraphIndex}`],
+            id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
+            pIndex: paragraphIndex
             });
-            contentIndex++;
+            paragraphIndex++;
         }
 
-        let imageIndex = 1;
-        while (data[`section${partIndex}Img${imageIndex}`]) {
-            content.push({
-                type: 'img',
-                value: data[`section${partIndex}Img${imageIndex}`], // Directly use the URL/path here
-                id: data[`section${partIndex}Img${imageIndex}Id`] || null
+        while (files[`section${sectionIndex}Img${imageIndex}`]) {
+            const file = files[`section${sectionIndex}Img${imageIndex}`];
+            const filePath = `./uploads/${file.name}`;
+            await file.mv(filePath); // Save the file to disk
+            images.push({
+            url: `/uploads/${file.name}`,
+            filename: file.name,
+            imgIndex: imageIndex
             });
             imageIndex++;
         }
 
-        if (heading && content.length) {
-            parts.push({
-                heading,
-                content
-            });
+        sections.push({
+            header: sectionHeader,
+            paragraphs,
+            images,
+            index: sectionIndex
+        });
+
+        sectionIndex++;
         }
-        partIndex++;
-    }
 
-    return parts.length > 0;
-}
-
-app.post('/makeGuide', (req, res) => {
-    console.log("Request body:", req.body);
-    console.log("Files received:", req.files);
-
-    const { title } = req.body;
-    const parts = [];
-
-    // Validate input fields
-    if (!validateFields(req.body)) {
-        console.log("Validation failed:", req.body);
-        return res.status(400).json({ error: "Invalid input: All required fields must be provided." });
-    }
-    console.log("Validation passed");
-
-    // Process files if any
-    const imageFiles = req.files || {};
-    const imageUrls = {};
-
-    // Handle file uploads and generate public URLs
-    const filePromises = Object.entries(imageFiles).map(([key, file]) => {
-        const filePath = `uploads/${file.name}`; // Correctly define the file path for storage
-        console.log(`Saving file ${key}: ${filePath}`);
-        return new Promise((resolve, reject) => {
-            file.mv(`./public/${filePath}`, err => {
-                if (err) {
-                    console.log("File move error:", err);
-                    return reject(err);
-                }
-                // Generate public URL
-                const publicUrl = `/${filePath}`;
-                console.log(`Public URL for ${key}: ${publicUrl}`);
-                imageUrls[key] = publicUrl; // Store the public URL
-                resolve();
-            });
+        const guide = new Guide({
+        title,
+        sections
         });
-    });
 
-    Promise.all(filePromises)
-        .then(() => {
-            console.log("Files saved, imageUrls:", imageUrls);
+        await guide.save();
 
-            // Construct parts with image URLs and paragraphs
-            let partIndex = 1;
-            while (req.body[`section${partIndex}H2`]) {
-                const heading = req.body[`section${partIndex}H2`];
-                const content = [];
-
-                let contentIndex = 1;
-                // Add paragraphs
-                while (req.body[`section${partIndex}P${contentIndex}`]) {
-                    content.push({
-                        type: 'p',
-                        value: req.body[`section${partIndex}P${contentIndex}`],
-                        id: req.body[`section${partIndex}P${contentIndex}Id`] || null
-                    });
-                    contentIndex++;
-                }
-
-                // Add images
-                let imageIndex = 1;
-                while (req.body[`section${partIndex}Img${imageIndex}`]) {
-                    const imageUrl = imageUrls[`section${partIndex}Img${imageIndex}`] || req.body[`section${partIndex}Img${imageIndex}`];
-                    console.log(`Adding image URL to content for section${partIndex}Img${imageIndex}: ${imageUrl}`);
-                    content.push({
-                        type: 'img',
-                        value: imageUrl, // Save the URL as text
-                        id: req.body[`section${partIndex}Img${imageIndex}Id`] || null
-                    });
-                    imageIndex++;
-                }
-
-                if (heading && content.length) {
-                    parts.push({
-                        heading,
-                        content
-                    });
-                }
-                partIndex++;
-            }
-
-            console.log("Constructed parts:", JSON.stringify(parts, null, 2)); // Pretty-print the parts array
-
-            // Create new Guide document
-            const newGuide = new Guide({
-                title,
-                parts
-            });
-
-            console.log("Saving guide:", JSON.stringify(newGuide, null, 2)); // Pretty-print the guide document
-
-            return newGuide.save();
-        })
-        .then(() => {
-            console.log("Guide saved successfully.");
-            res.json({ message: "Guide saved successfully." });
-        })
-        .catch(err => {
-            console.log("Error saving guide:", err);
-            res.status(500).json({ error: "Error saving guide: " + err.message });
-        });
+        res.status(201).send(guide);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
-
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

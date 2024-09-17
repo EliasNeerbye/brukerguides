@@ -1,35 +1,23 @@
 const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
-
-// Define the schema for "content" within each part (paragraphs or images)
-const ContentSchema = new Schema({
-  type: { type: String, enum: ['p', 'img'], required: true },
-  value: { type: String, required: true },
-  alt: { type: String }, // Optional for images
-  id: { type: String } // Optional
+const SectionSchema = new mongoose.Schema({
+  header: { type: String, required: true },
+  paragraphs: [{
+    text: { type: String, required: true },
+    id: { type: String, required: false },
+    pIndex: { type: Number, required: true }
+  }],
+  images: [{
+    url: { type: String, required: true },
+    filename: { type: String, required: true },
+    imgIndex: { type: Number, required: true }
+  }],
+  index: { type: Number, required: true }
 });
 
-
-// Define the schema for each "part" (section with h2 and content)
-const PartSchema = new Schema({
-  heading: { type: String, required: true },
-  content: [ContentSchema]
-});
-
-
-// Define the main "Guide" schema
-const GuideSchema = new Schema({
+const GuideSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-  parts: [PartSchema],
-  dateCreated: { type: Date, default: Date.now },
-  dateUpdated: { type: Date, default: Date.now }
-});
-
-GuideSchema.pre('save', function (next) {
-  this.dateUpdated = Date.now();
-  next();
+  sections: [SectionSchema]
 });
 
 const Guide = mongoose.model('Guide', GuideSchema);
