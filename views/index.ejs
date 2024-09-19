@@ -8,12 +8,19 @@
     </head>
     <body>
         <%- include("partials/header") %>
-        <script>
-            addUnderline();
-        </script>
+        <% if (guides && guides.length > 0) { %>
+            <script>
+                addUnderline();
+                const guideList = guides;    
+            </script>
+        <% } else { %>
+            <script>
+                addUnderline();    
+            </script>
+        <% } %>
         <main>
             <h1>Brukerguider for alle slags ting</h1>
-            <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..."><img src="assets/searchIcon.png"></section>
+            <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..." onkeyup="search()"><img src="assets/searchIcon.png"></section>
             <section id="guideList">
                 <% if (guides && guides.length > 0) { %>
                     <% for (let i = 0; i < guides.length; i++) {
@@ -39,8 +46,28 @@
             }
 
             function search() {
-                // Add some search functionality
+                // Get the search query
+                const query = document.getElementById('searchInput').value.toLowerCase();
+                
+                // Get all the article elements in the guideList
+                const articles = document.querySelectorAll('.guideDisplay');
+                
+                // Loop through each article
+                articles.forEach(article => {
+                    // Get the h2 text content of the current article and convert to lowercase
+                    const title = article.querySelector('h2').textContent.toLowerCase();
+                    
+                    // Check if the title contains the search query
+                    if (title.includes(query)) {
+                        // If yes, show the article
+                        article.style.display = "";
+                    } else {
+                        // If no, hide the article
+                        article.style.display = "none";
+                    }
+                });
             }
+
         </script>
 
     </body>

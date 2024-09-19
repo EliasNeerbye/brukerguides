@@ -51,7 +51,9 @@ app.get('/', async (req, res) => {
         // Transform the guide data into a list of objects with id and title
         const guideList = guides.map(guide => ({
             id: guide._id,
-            name: guide.title
+            name: guide.title,
+            updated: guide.updatedAt,
+            created: guide.createdAt
         }));
 
         // Render the index view with the list of guides
@@ -104,6 +106,10 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login/submit', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
     const { username, password } = req.body;
 
     // Validate input
