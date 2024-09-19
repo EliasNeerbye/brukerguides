@@ -15,25 +15,22 @@
             <h1>Brukerguider for alle slags ting</h1>
             <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..."><img src="assets/searchIcon.png"></section>
             <section id="guideList">
-                <article class="guideDisplay" onclick="openGuide('default')">
-                    <h2>Eksempel guide</h2>
-                </article>
-                <article class="guideDisplay" onclick="openGuide('default')">
-                    <h2>Eksempel guide</h2>
-                </article>
-                <article class="guideDisplay" onclick="openGuide('default')">
-                    <h2>Eksempel guide</h2>
-                </article>
-                <article class="guideDisplay" onclick="openGuide('default')">
-                    <h2>Eksempel guide</h2>
-                </article>
-                <article class="guideDisplay" onclick="openGuide('default')">
-                    <h2>Eksempel guide</h2>
-                </article>
+                <% if (guides) {
+                    for (let i = 0; i < guides.length; i++) {
+                        const element = guides[i]; %>
+                        <article class="guideDisplay" onclick="openGuide('<%- element.id %>')"><h2><%- element.name %></h2></article>
+                    <% }
+                } else { %>
+                    <article class="guideDisplay" onclick="openGuide('default')"><h2>Example Article</h2></article>
+                <% }
+                %>
             </section>
         </main>
         <script>
             function openGuide(guideName) {
+                if (guideName == "default") {
+                    window.location.href = "/guide";
+                }
                 window.location.href = "/guide/" + guideName;
             }
         </script>
