@@ -3,4 +3,4 @@
 - Lagre
 - Les
 
-* Bruker guides, simple and easy *
+*Bruker guides, simple and easy*
