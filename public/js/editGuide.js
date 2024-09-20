@@ -85,7 +85,7 @@ async function populateGuideForm(guide) {
     });
 
     guideForm.removeChild(guideForm.lastChild);
-    guideForm.action = '/saveGuide';
+    guideForm.action = '/saveGuide/' + guide._id;
 }
 
 

@@ -280,15 +280,27 @@ app.post('/editGuide', async (req, res) => {
     }
 });
 
-app.post('/deleteGuide', (req, res) => {
+app.post('/saveGuide/:id', (req, res) => {
+    if(!req.session.user){
+        return res.redirect('/login');
+    }
+    // Update / save guide
+})
+
+app.post('/deleteGuide/:id', (req, res) => {
     if(!req.session.user){
         return res.redirect('/login');
     }
     // Delete a guide based on req.body.id
 })
 
-app.post('/saveGuide', (req, res) => {
-    //Save
+app.get('/logout', (req, res) => {
+    if(!req.session.user){
+        return res.redirect('/login');
+    } else {
+        req.session.destroy()
+        return res.redirect('/');
+    }
 })
 
 // 404 Error Handler (catch-all for unhandled routes)

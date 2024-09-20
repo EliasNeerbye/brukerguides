@@ -19,7 +19,7 @@ html, body{
 
 #navbar{
     display: flex;
-    width: 70%;
+    width: 90%;
     justify-content: space-between;
     align-items: center;
     margin: auto;
@@ -27,8 +27,9 @@ html, body{
     height: 50px;
 }
 
-
 #navLogoDiv{
+    display: block;
+    width: 25%;
     height: 100%;
     aspect-ratio: 1/1;
 }
@@ -38,8 +39,11 @@ html, body{
 }
 
 #homeLink{
+    display: block;
+    width: 25%;
     color: aliceblue;
     text-decoration: none;
+    text-align: center;
 }
 
 #homeLink:hover{
@@ -47,8 +51,19 @@ html, body{
     text-decoration: underline;
 }
 
-#loginBtn{
+#buttonsDiv{
+    flex-grow: 0;
+    height: 100%;
+    display: flex;
+    width: 25%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#loginBtn, #logoutBtn{
     height: 50%;
+    width: 50%;
     padding: 0 20px 0 20px;
     background-color: #FFFFFF19;
     color: aliceblue;
@@ -58,7 +73,7 @@ html, body{
     transition-duration: 0.2s;
 }
 
-#loginBtn:hover{
+#loginBtn:hover, #logoutBtn:hover{
     background-color: #FFFFFF44;
     color: aquamarine;
 }

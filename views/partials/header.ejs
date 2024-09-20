@@ -2,7 +2,10 @@
     <link rel="stylesheet" href="/styles/header.css">
     <div id="navLogoDiv"><img src="/assets/favicon.ico" id="navLogo"></div>
     <a href="/" id="homeLink">Guides</a>
-    <button id="loginBtn">Logg inn</button>
+    <div id="buttonsDiv">
+        <button id="loginBtn">Logg inn</button>
+        <button id="logoutBtn">Logg ut</button>
+    </div>
 </header>
 <script>
     function addUnderline(){
@@ -11,5 +14,9 @@
 
     document.getElementById("loginBtn").addEventListener("click", () => {
         window.location.href = "/login";
+    })
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        window.location.href = "/logout";
     })
 </script>

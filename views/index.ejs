@@ -11,7 +11,7 @@
         <% if (guides && guides.length > 0) { %>
             <script>
                 addUnderline();
-                const guideList = guides;    
+                const guideList = <%- JSON.stringify(guides) %>;    
             </script>
         <% } else { %>
             <script>
