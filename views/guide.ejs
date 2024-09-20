@@ -19,7 +19,7 @@
             <% }) %>
         <% }) %>
         <% if (isLoggedIn) { %>
-            <button onclick="deleteGuide()">Delete Guide</button>
+            <button onclick="deleteGuide()" id="delBtnCool">Delete Guide</button>
             <script>
                 function deleteGuide() {
                     const id = "<%= guide._id %>";

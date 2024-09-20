@@ -134,3 +134,23 @@ h2{
 *{
     scroll-margin-top: 250px;
 }
+
+#delBtnCool{
+    display: block;
+    width: 80%;
+    margin: auto;
+    margin-top: 20px;
+    height: 35px;
+    font-size: 1rem;
+    background-color: #ffffff11;
+    color: aliceblue;
+    border: 1px solid;
+    border-radius: 8px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+#delBtnCool:hover{
+    color: aquamarine;
+    background-color: #ffffff44;
+}
