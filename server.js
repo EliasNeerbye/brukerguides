@@ -240,13 +240,56 @@ app.post("/makeGuide", async (req, res) => {
 
         await guide.save();
 
-        res.status(201).send(guide);
+        res.redirect('/guide/'+guide._id);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
 });
 
+app.post('/editGuide', async (req, res) => {
+    // Check if user is logged in
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+
+    try {
+        // Find guide by ID, ensure async handling
+        const guide = await Guide.findById(req.body.id);
+
+        if (guide) {
+            // Return guide if found
+            return res.json({
+                success: true,
+                guide: guide
+            });
+        } else {
+            // Return error if guide was not found
+            return res.status(404).json({
+                success: false,
+                message: "Guide not found"
+            });
+        }
+    } catch (err) {
+        // Handle any other errors
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred",
+            error: err.message
+        });
+    }
+});
+
+app.post('/deleteGuide', (req, res) => {
+    if(!req.session.user){
+        return res.redirect('/login');
+    }
+    // Delete a guide based on req.body.id
+})
+
+app.post('/saveGuide', (req, res) => {
+    //Save
+})
 
 // 404 Error Handler (catch-all for unhandled routes)
 app.use((req, res, next) => {

@@ -1,5 +1,5 @@
 let sectionCount = 0; // Initialize the section count
-const divCounts = {}; // Object to keep track of div counts for each section
+let divCounts = {}; // Object to keep track of div counts for each section
 
 // Function to add a new section dynamically
 function addSection() {
