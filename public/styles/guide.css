@@ -1,7 +1,7 @@
 body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-rows: repeat(1fr, 25fr);
     grid-template-areas: 
     "nav nav nav nav"
     "aside main main main"
@@ -62,7 +62,7 @@ main {
 main{
     width: 95%;
     overflow-y: auto;
-    height: 91.5vh;
+    height: 84vh;
 }
 
 ::-webkit-scrollbar{

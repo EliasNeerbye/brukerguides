@@ -24,7 +24,8 @@ html, body{
     align-items: center;
     margin: auto;
     padding-top: 10px;
-    height: 50px;
+    height: 100px;
+    flex-grow: 0;
 }
 
 #navLogoDiv{
@@ -58,11 +59,11 @@ html, body{
     width: 25%;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 #loginBtn, #logoutBtn{
-    height: 50%;
+    height: 40%;
     width: 50%;
     padding: 0 20px 0 20px;
     background-color: #FFFFFF19;
