@@ -209,8 +209,6 @@ app.get('/guide/:id', async (req, res) => {
     }
 });
 
-
-
 app.get('/guide', async (req, res) => {
     return res.render("guideDefault");
 });
@@ -311,12 +309,99 @@ app.post('/editGuide', async (req, res) => {
     }
 });
 
-app.post('/saveGuide/:id', (req, res) => {
-    if(!req.session.user){
+app.post('/saveGuide/:id', async (req, res) => {
+    if (!req.session.user) {
         return res.redirect('/login');
     }
-    // Update / save guide
-})
+
+    const guideId = req.params.id;
+
+    // Validate the guide ID
+    if (!isValidGuideId(guideId)) {
+        return res.status(400).send('Invalid guide ID');
+    }
+
+    try {
+        // Retrieve the existing guide to compare images and sections
+        const existingGuide = await Guide.findById(guideId);
+        if (!existingGuide) {
+            return res.status(404).send('Guide not found');
+        }
+
+        const { title, ...body } = req.body;
+        const files = req.files;
+
+        const updatedSections = [];
+        let sectionIndex = 1;
+
+        while (body[`section${sectionIndex}H2`]) {
+            const sectionHeader = body[`section${sectionIndex}H2`];
+            const newSection = {
+                header: sectionHeader,
+                paragraphs: [],
+                images: [],
+                index: sectionIndex, // Include index here
+            };
+
+            // Update paragraphs
+            let paragraphIndex = 1;
+            while (body[`section${sectionIndex}P${paragraphIndex}`]) {
+                newSection.paragraphs.push({
+                    text: body[`section${sectionIndex}P${paragraphIndex}`],
+                    id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
+                    pIndex: paragraphIndex,
+                });
+                paragraphIndex++;
+            }
+
+            // Handle new images
+            let imageIndex = 1;
+            while (files && files[`section${sectionIndex}Img${imageIndex}`]) {
+                const file = files[`section${sectionIndex}Img${imageIndex}`];
+                const filePath = `./public/uploads/${file.name}`;
+                await file.mv(filePath); // Save the file to disk
+                newSection.images.push({
+                    url: `/uploads/${file.name}`,
+                    filename: file.name,
+                    imgIndex: imageIndex,
+                });
+                imageIndex++;
+            }
+
+            updatedSections.push(newSection);
+            sectionIndex++;
+        }
+
+        // Determine images to delete
+        const existingImages = existingGuide.sections.flatMap(section => section.images.map(img => img.filename));
+        const newImages = updatedSections.flatMap(section => section.images.map(img => img.filename));
+        
+        const imagesToDelete = existingImages.filter(img => !newImages.includes(img));
+
+        // Delete previous images from the filesystem
+        for (const img of imagesToDelete) {
+            const imagePath = path.join(__dirname, 'public', 'uploads', img);
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error(`Error deleting image: ${img}`, err);
+                }
+            });
+        }
+
+        // Update only changed fields in the guide
+        await Guide.findByIdAndUpdate(
+            guideId,
+            { title, sections: updatedSections },
+            { new: true, runValidators: true }
+        );
+
+        // Redirect to the updated guide's page
+        res.redirect('/guide/' + guideId);
+    } catch (error) {
+        console.error('Error updating guide:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 app.post('/deleteGuide/:id', async (req, res) => {
     if (!req.session.user) {
