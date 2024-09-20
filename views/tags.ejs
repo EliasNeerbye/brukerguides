@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles/tags.css">
+</head>
+<body>
+    <%- include("partials/header") %>
+    <main id="main">
+        <section id="idSection">
+            <div>
+                <label for="id">ID: </label>
+                <input type="text" name="id" id="id" placeholder="CoolID">
+            </div>
+            <div>
+                <label for="makeTag">Make tag: </label>
+                <input type="text" name="makeTag" id="makeTag" placeholder="CoolTag">
+            </div>
+        </section>
+        <section id="tagsDisplay">
+
+        </section>
+        <button id="addTagsBtn" onclick="addTags()">Add tags</button>
+    </main>
+</body>
+</html>
