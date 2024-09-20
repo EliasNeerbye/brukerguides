@@ -8,6 +8,7 @@ body {
     ;
     grid-column-gap: 20px;
     grid-row-gap: 20px;
+    overflow: hidden;
 }
 #sideBar {
     grid-area: aside;
@@ -112,7 +113,8 @@ h2{
 .guideText{
     display: block;
     width: 100%;
-    text-align: center;
+    align-self: center;
+    justify-self: center;
 }
 
 .guideImgDiv{
@@ -127,4 +129,8 @@ h2{
 .guideImgDiv img{
     max-width: 100%;
     max-height: 100%;
+}
+
+*{
+    scroll-margin-top: 250px;
 }

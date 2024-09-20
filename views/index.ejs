@@ -20,7 +20,7 @@
         <% } %>
         <main>
             <h1>Brukerguider for alle slags ting</h1>
-            <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..." onkeyup="search()"><img src="assets/searchIcon.png"></section>
+            <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..." oninput="search()"><img src="assets/searchIcon.png"></section>
             <section id="guideList">
                 <% if (guides && guides.length > 0) { %>
                     <% for (let i = 0; i < guides.length; i++) {

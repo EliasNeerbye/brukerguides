@@ -106,10 +106,6 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login/submit', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
     const { username, password } = req.body;
 
     // Validate input
@@ -189,6 +185,9 @@ app.get('/guide', async (req, res) => {
 });
 
 app.post("/makeGuide", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
     try {
         const { title, ...body } = req.body;
         const files = req.files;
