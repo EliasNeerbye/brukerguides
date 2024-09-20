@@ -7,6 +7,9 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const fileUpload = require('express-fileupload');
+const { ObjectId } = require('mongodb');
+const fs = require('fs');
+
 
 app.set('view engine', 'ejs');
 
@@ -153,7 +156,24 @@ app.get('/dashboard', (req, res) => {
     res.render('dashboard');
 });
 
+function isValidGuideId(guideId) {
+    // Check if it's a 24-character hex string
+    const isHexString = /^[0-9a-fA-F]{24}$/.test(guideId);
 
+    // Check if it's a 12-byte Uint8Array
+    const isUint8Array = (id) => {
+        if (typeof id === 'string') {
+            const buffer = Buffer.from(id, 'hex');
+            return buffer.length === 12;
+        }
+        return false;
+    };
+
+    // Check if it's an integer
+    const isInteger = Number.isInteger(Number(guideId));
+
+    return isHexString || isUint8Array(guideId) || isInteger;
+}
 
 // Route to render a specific guide based on ID
 app.get('/guide/:id', async (req, res) => {
@@ -161,16 +181,27 @@ app.get('/guide/:id', async (req, res) => {
         // Extract the guide ID from the request parameters
         const guideId = req.params.id;
 
+        if (!isValidGuideId(guideId)) {
+            return res.status(400).send("Invalid guide ID. Must be a 24-character hex string, 12-byte Uint8Array, or an integer.<br><br><br><a href='/'>Go home</a>");
+        }
+
         // Fetch the guide from the database using the ID
         const guide = await Guide.findById(guideId).exec();
 
         // Check if the guide was found
         if (!guide) {
-            return res.status(404).send('Guide not found');
+            return res.status(404).send('Guide not found.<br><br><br><a href="/">Go home</a>');
+        }
+
+        let isLoggedIn;
+        if (!req.session.user){
+            isLoggedIn = false;
+        } else {
+            isLoggedIn = true;
         }
 
         // Render the guide view with the retrieved guide data
-        res.render('guide', { guide });
+        res.render('guide', { guide , isLoggedIn });
     } catch (err) {
         // Handle errors, e.g., database errors
         console.error(err);
@@ -287,12 +318,57 @@ app.post('/saveGuide/:id', (req, res) => {
     // Update / save guide
 })
 
-app.post('/deleteGuide/:id', (req, res) => {
-    if(!req.session.user){
+app.post('/deleteGuide/:id', async (req, res) => {
+    if (!req.session.user) {
         return res.redirect('/login');
     }
-    // Delete a guide based on req.body.id
-})
+
+    try {
+        const guideId = req.params.id;
+
+        if (!isValidGuideId(guideId)) {
+            return res.status(400).send({ message: "Invalid guide ID. Must be a 24-character hex string, 12-byte Uint8Array, or an integer." });
+        }
+
+        // Find the guide to retrieve the image URLs
+        const guide = await Guide.findById(guideId);
+        if (!guide) {
+            return res.status(404).send({ message: "Guide not found." });
+        }
+
+        // Extract image URLs from all sections
+        const imgUrls = guide.sections.flatMap(section => 
+            section.images.map(image => image.url)
+        );
+
+        // Delete the images first
+        const deleteImagePromises = imgUrls.map(imgUrl => {
+            const filePath = path.join(__dirname, 'public', imgUrl); // Assuming imgUrls are relative to 'public'
+            return new Promise((resolve) => {
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Failed to delete image at ${filePath}:`, err);
+                    }
+                    resolve(); // Resolve regardless of error
+                });
+            });
+        });
+
+        await Promise.all(deleteImagePromises); // Wait for all delete operations to complete
+
+        // Now delete the guide from the database
+        const result = await Guide.deleteOne({ _id: new ObjectId(guideId) });
+
+        if (result.deletedCount === 1) {
+            return res.status(200).redirect('/');
+        } else {
+            return res.status(404).send({ message: "Guide not found." });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "An error occurred while deleting the guide." });
+    }
+});
 
 app.get('/logout', (req, res) => {
     if(!req.session.user){
