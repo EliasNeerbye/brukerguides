@@ -28,12 +28,27 @@ html, body{
     flex-grow: 0;
 }
 
-#navLogoDiv{
+#navLogoDiv {
     display: block;
     width: 25%;
     height: 100%;
     aspect-ratio: 1/1;
+    cursor: pointer;
+    transition-duration: 0.3s;
 }
+
+#navLogoDiv:hover {
+    animation: shake 1s ease-in-out; /* Adjust duration and easing as needed */
+}
+
+@keyframes shake {
+    0% { transform: translate(0); filter: hue-rotate(25deg); }
+    25% { transform: translate(-5px, 0); filter: hue-rotate(45deg); }
+    50% { transform: translate(5px, 0); filter: hue-rotate(65deg); }
+    75% { transform: translate(-5px, 0); filter: hue-rotate(45deg); }
+    100% { transform: translate(0); filter: hue-rotate(25deg); }
+}
+
 
 #navLogo{
     max-height: 100%;
@@ -62,7 +77,7 @@ html, body{
     justify-content: space-around;
 }
 
-#loginBtn, #logoutBtn{
+#loginBtn, #logoutBtn, #dashboardBtn{
     height: 40%;
     width: 50%;
     padding: 0 20px 0 20px;
@@ -74,7 +89,7 @@ html, body{
     transition-duration: 0.2s;
 }
 
-#loginBtn:hover, #logoutBtn:hover{
+#loginBtn:hover, #logoutBtn:hover, #dashboardBtn:hover{
     background-color: #FFFFFF44;
     color: aquamarine;
 }

@@ -34,6 +34,7 @@ function createTag() {
                 // Optionally clear the input fields after successful tag creation
                 document.getElementById("makeTag").value = '';
                 document.getElementById("tagDesc").value = '';
+                location.reload();
             } else {
                 // Error handling from server-side validation (e.g., duplicate tag name)
                 alertMsg.innerText = `Failed to create tag: ${data.message} (Status: ${response.status})`;

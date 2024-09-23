@@ -1,22 +1,43 @@
 <header id="navbar">
     <link rel="stylesheet" href="/styles/header.css">
-    <div id="navLogoDiv" onclick="window.location.href = '/tags'"><img src="/assets/favicon.ico" id="navLogo"></div>
+    <div id="navLogoDiv" onclick="window.location.href = '/tags'">
+        <img src="/assets/favicon.ico" id="navLogo">
+    </div>
     <a href="/" id="homeLink">Guides</a>
     <div id="buttonsDiv">
-        <button id="loginBtn">Logg inn</button>
-        <button id="logoutBtn">Logg ut</button>
+        <button id="dashboardBtn" style="display: none;">Dashboard</button>
+        <button id="logoutBtn" style="display: none;">Logg ut</button>
+        <button id="loginBtn" style="display: none;">Logg inn</button>
     </div>
 </header>
 <script>
-    function addUnderline(){
-        document.getElementById("homeLink").style.textDecoration = "underline";
+    async function checkAuth() {
+        try {
+            const response = await fetch('/api/check-auth');
+            const data = await response.json();
+
+            if (data.loggedIn) {
+                document.getElementById("dashboardBtn").style.display = 'block';
+                document.getElementById("logoutBtn").style.display = 'block';
+
+                document.getElementById("dashboardBtn").addEventListener("click", () => {
+                    window.location.href = "/dashboard"; // Adjust the URL as needed
+                });
+
+                document.getElementById("logoutBtn").addEventListener("click", () => {
+                    window.location.href = "/logout";
+                });
+            } else {
+                document.getElementById("loginBtn").style.display = 'block';
+                document.getElementById("loginBtn").addEventListener("click", () => {
+                    window.location.href = "/login";
+                });
+            }
+        } catch (error) {
+            console.error('Error checking auth:', error);
+        }
     }
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
-        window.location.href = "/login";
-    })
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        window.location.href = "/logout";
-    })
+    // Check authentication status on page load
+    checkAuth();
 </script>

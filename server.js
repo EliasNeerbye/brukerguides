@@ -71,7 +71,11 @@ app.get('/', async (req, res) => {
     }
 });
 
-
+app.get('/api/check-auth', (req, res) => {
+    // Check if the user is logged in by checking the session
+    const loggedIn = req.session.user ? true : false;
+    res.json({ loggedIn });
+});
 
 // Signup route to create a default user
 // app.get('/signup/default', async (req, res) => {
