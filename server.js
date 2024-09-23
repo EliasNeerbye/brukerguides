@@ -23,7 +23,8 @@ app.use(fileUpload({
 
 
 const User = require("./models/user");
-const Guide = require("./models/guide")
+const Guide = require("./models/guide");
+const Tag = require("./models/tag");
 
 
 
@@ -464,13 +465,93 @@ app.get('/logout', (req, res) => {
     }
 })
 
-app.get('/tags', (req, res) => {
+app.get('/tags', async (req, res) => {
     if (!req.session.user) {
-        res.redirect('/login');
+        return res.redirect('/login');
     } else {
+        const tags = await Tag.find();
         res.render('tags', { tags })
     }
 })
+
+app.post('/makeTag', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    } else {
+        try {
+            const { name, description } = req.body;
+
+            // Create a new Tag instance with the provided data
+            const newTag = new Tag({ name, description });
+
+            // Save the tag to the database
+            await newTag.save()
+                .then((result) => {
+                    // Success: send a success message and the created tag
+                    res.status(200).json({ 
+                        message: 'Tag created successfully', 
+                        tag: result 
+                    });
+                })
+                .catch((err) => {
+                    // Handle validation or other errors
+                    res.status(400).json({ 
+                        message: 'Failed to create tag', 
+                        error: err.message 
+                    });
+                });
+
+        } catch (error) {
+            // General server error handling
+            res.status(500).json({ 
+                message: 'Internal server error', 
+                error: error.message 
+            });
+        }}
+});
+
+app.post('/addTagToGuide', async (req, res) => {
+    try {
+        const { guideId, selectedTags } = req.body;
+
+        // Ensure guideId and selectedTags are provided
+        if (!guideId || !selectedTags || selectedTags.length === 0) {
+            return res.status(400).json({ message: 'Guide ID and selected tags are required.' });
+        }
+
+        // Find the guide by its ID
+        const guide = await Guide.findById(guideId);
+
+        if (!guide) {
+            return res.status(404).json({ message: 'Guide not found.' });
+        }
+
+        // Find all tags that match the selected tags
+        const tags = await Tag.find({ name: { $in: selectedTags } });
+
+        if (tags.length === 0) {
+            return res.status(404).json({ message: 'No matching tags found.' });
+        }
+
+        // Add tags to the guide (assuming the Guide schema has a 'tags' field)
+        // Avoid duplicating tags
+        tags.forEach(tag => {
+            if (!guide.tags.includes(tag._id)) {
+                guide.tags.push(tag._id);
+            }
+        });
+
+        // Save the guide with the updated tags
+        await guide.save();
+
+        // Respond with success
+        res.status(200).json({ message: 'Tags added successfully.', guide });
+    } catch (error) {
+        console.error('Error adding tags to guide:', error);
+        res.status(500).json({ message: 'An error occurred while adding tags to the guide.', error });
+    }
+});
+
 
 // 404 Error Handler (catch-all for unhandled routes)
 app.use((req, res, next) => {

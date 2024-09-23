@@ -9,20 +9,35 @@
 <body>
     <%- include("partials/header") %>
     <main id="main">
-        <section id="idSection">
-            <div>
-                <label for="id">ID: </label>
-                <input type="text" name="id" id="id" placeholder="CoolID">
+        <div>
+            <p id="alertMsg"></p>
+            <label for="makeTag">Make tag: </label>
+            <input type="text" name="makeTag" id="makeTag" placeholder="CoolTag">
+            <input type="text" name="tagDesc" id="tagDesc" placeholder="Short tag description (optional)">
+            <button id="makeTagBtn" onclick="createTag()">Create!</button>
+        </div>
+        <div>
+            <label for="id">ID: </label>
+            <input type="text" name="id" id="guideId" placeholder="CoolID">
+        </div>
+        <% if (tags && tags.length > 0) { %>
+            <div id="tagsDisplay">
+                <% tags.forEach(element => { %>
+                    <div class="tagDivs">
+                        <div class="inputPart">
+                            <input type="checkbox" name="<%= element.name %>" id="<%= element.name %>" class="tagCheckbox" onchange="updateWithTag(this)">
+                            <label for="<%= element.name %>"><%= element.name %></label>
+                        </div>
+                        <p class="tagDescriptionDisplay"><%= element.description %></p>
+                    </div>
+                <% }); %>
             </div>
-            <div>
-                <label for="makeTag">Make tag: </label>
-                <input type="text" name="makeTag" id="makeTag" placeholder="CoolTag">
-            </div>
-        </section>
-        <section id="tagsDisplay">
-
-        </section>
+            <% } else { %>
+            <p>No tags available.</p>
+        <% } %>
+            
         <button id="addTagsBtn" onclick="addTags()">Add tags</button>
     </main>
+    <script src="js/tagfunctions.js"></script>
 </body>
 </html>
