@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <link rel="stylesheet" href="/styles/dashboard.css">
 </head>
 <body>
@@ -18,7 +21,16 @@
         </section>
         <form action="/makeGuide" enctype="multipart/form-data" id="guideForm" method="post">
             <input type="text" name="title" id="title" placeholder="Title">
-            
+            <% if (tags && tags.length > 0) { %>
+                <label for="tags">Choose your tags:</label>
+                <select name="tags" id="tags" multiple>
+                    <% tags.forEach(tag => { %>
+                        <option value="<%= tag._id %>"><%= tag.name %></option>
+                    <% }); %>
+                </select>
+            <% } else { %>
+                <p>No tags available.</p>
+            <% } %>
         </form>
     </main>
     <footer>
@@ -41,6 +53,15 @@
         function finished() {
             document.getElementById("guideForm").submit();
         }
+
+        $(document).ready(function() {
+            $('#tags').select2({
+                placeholder: "Select tags",
+                allowClear: true,
+                tags: true, // Allow users to add new tags
+                maximumSelectionLength: 5 // Limit to 5 selections
+            });
+        });
     </script>
     <script id="deleteMyself">
         addSection();

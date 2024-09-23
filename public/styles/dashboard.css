@@ -124,3 +124,88 @@ textarea{
 textarea:focus{
     outline: 0;
 }
+
+.select2-container--default .select2-selection--multiple{
+    background-color: transparent;
+    border: 2px solid;
+    color: aquamarine;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: aquamarine;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected]{
+    background-color: #333300;
+    color: aliceblue;
+}
+
+.select2-container--default .select2-results__option[aria-selected="true"]{
+    background-color: #990033;
+    color: azure;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice{
+    background-color: #99003322;
+    color: aliceblue;
+}
+
+/* General styles for the Select2 container */
+.select2-container {
+    width: 60% !important; /* Set the width */
+    height: 55px;
+}
+
+/* Style for the Select2 selection box */
+.select2-selection {
+    background-color: transparent; /* Transparent background */
+    color: black; /* Text color */
+    border: 1px solid aquamarine; /* Border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 5px; /* Padding */
+    font-size: 0.9rem; /* Font size */
+}
+
+/* Style for the selected options */
+.select2-selection__rendered {
+    color: white; /* Text color for selected options */
+}
+
+/* Style the placeholder */
+.select2-selection__placeholder {
+    color: #b0e0e6; /* Lighter color for placeholder */
+}
+
+/* Style for the dropdown items */
+.select2-results__option {
+    color: black; /* Text color for dropdown items */
+    background-color: rgba(127, 255, 212, 0.4); /* Aquamarine with 40% alpha */
+}
+
+/* Alternate background colors for dropdown items */
+.select2-results__option:nth-child(even) {
+    background-color: rgba(127, 255, 212, 0.4); /* Aquamarine with 40% alpha */
+}
+
+.select2-results__option:nth-child(odd) {
+    background-color: rgba(0, 255, 255, 0.4); /* Aqua with 40% alpha */
+}
+
+/* Highlight color for selected items */
+.select2-results__option--highlighted,
+.select2-results__option--selected {
+    background-color: rgba(0, 128, 128, 0.6); /* Teal-ish color with 60% alpha */
+    color: black; /* Text color on highlight */
+}
+
+/* Hover effect for dropdown items */
+.select2-results__option--highlighted {
+    background-color: aquamarine; /* Highlight color on hover */
+    color: black; /* Text color on hover */
+}
+
+/* Remove default outline for focus */
+.select2-selection:focus {
+    outline: none; /* Remove default outline */
+    border-color: aliceblue; /* Highlight border on focus */
+}
