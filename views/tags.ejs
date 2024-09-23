@@ -9,23 +9,24 @@
 <body>
     <%- include("partials/header") %>
     <main id="main">
-        <div>
+        <div id="makeTagsDiv">
             <p id="alertMsg"></p>
             <label for="makeTag">Make tag: </label>
             <input type="text" name="makeTag" id="makeTag" placeholder="CoolTag">
             <input type="text" name="tagDesc" id="tagDesc" placeholder="Short tag description (optional)">
             <button id="makeTagBtn" onclick="createTag()">Create!</button>
         </div>
-        <div>
+        <hr>
+        <div id="guideDiv">
             <label for="id">ID: </label>
             <input type="text" name="id" id="guideId" placeholder="CoolID">
         </div>
         <% if (tags && tags.length > 0) { %>
             <div id="tagsDisplay">
                 <% tags.forEach(element => { %>
-                    <div class="tagDivs">
+                    <div class="tagDivs" onclick="updateWithTag(this)">
                         <div class="inputPart">
-                            <input type="checkbox" name="<%= element.name %>" id="<%= element.name %>" class="tagCheckbox" onchange="updateWithTag(this)">
+                            <input type="checkbox" name="<%= element.name %>" id="<%= element.name %>" class="tagCheckbox">
                             <label for="<%= element.name %>"><%= element.name %></label>
                         </div>
                         <p class="tagDescriptionDisplay"><%= element.description %></p>

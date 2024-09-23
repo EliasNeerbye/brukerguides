@@ -1,0 +1,122 @@
+#makeTagsDiv{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#alertMsg{
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+#makeTagsDiv label{
+    font-size: 0.8rem;
+}
+
+input[type = "text"]{
+    width: 30%;
+    height: 25px;
+    text-align: center;
+    background-color: transparent;
+    color: aliceblue;
+    border: 0;
+    border-bottom: 1px solid aquamarine;
+    padding-bottom: 5px;
+}
+
+input[type = "text"]:focus{
+    color: aquamarine;
+    border-color: aliceblue;
+    outline: none;
+}
+
+#tagDesc{
+    width: 60% !important;
+}
+
+button{
+    height: 35px;
+    width: 50%;
+    padding: 0 20px 0 20px;
+    background-color: #FFFFFF19;
+    color: aliceblue;
+    border: 1px solid;
+    border-radius: 10px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+button:hover{
+    color: aquamarine;
+    background-color: #FFFFFF44;
+}
+
+hr{
+    margin-top: 20px;
+}
+
+#guideDiv{
+    width: 40%;
+    margin: auto;
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#tagsDisplay{
+    width: 90%;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.tagDivs{
+    flex-grow: 1;
+    background-color: #FF000044;
+    border: 2px solid;
+    color: #F04;
+    width: 20%;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 8px;
+}
+
+.tagDivs:hover{
+    filter: hue-rotate(45deg);
+}
+
+.selected{
+    background-color: #00FF0044;
+    color: #4f0;
+}
+
+input[type = "checkbox"]{
+    display: none;
+}
+
+#addTagsBtn{
+    display: block;
+    margin: auto;
+}
+
+.inputPart label{
+    color: aliceblue;
+}
+
+.tagDivs p{
+    font-size: 0.7rem;
+    font-style: italic;
+    color: aquamarine;
+}

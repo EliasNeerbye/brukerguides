@@ -51,26 +51,33 @@ function createTag() {
 let selectedTags = [];
 
 function updateWithTag(elem) {
-    const tagValue = elem.id;  // Use elem.id or elem.value depending on what you want
+    // Toggle the checked state of the checkbox
+    const checkbox = elem.firstElementChild.firstElementChild; // Access the checkbox directly
+    checkbox.checked = !checkbox.checked; // Flip the checked value
 
-    if (elem.checked) {
+    const tagValue = checkbox.id; // Get the tag ID
+
+    if (checkbox.checked) {
         console.log("Element is checked");
         // Add the tag to selectedTags if it's not already in the array
         if (!selectedTags.includes(tagValue)) {
             selectedTags.push(tagValue);
         }
+        elem.classList.add("selected");
     } else {
         console.log("Element is not checked");
         // Remove the tag from selectedTags if it is there
         selectedTags = selectedTags.filter(tag => tag !== tagValue);
+        elem.classList.remove("selected");
     }
 
     console.log("Selected tags:", selectedTags);
 }
 
 
+
 function addTags(){
-    const guideId = document.getElementById("guideId");
+    const guideId = document.getElementById("guideId").value;
     // Validate input values (ensure tag name is not empty)
     if (!guideId) {
         alert('Guide id is required!');
@@ -82,7 +89,7 @@ function addTags(){
         return;
     }
 
-    if (confirm(`Are you sure that you want to add these tags: ${toString(selectedTags)} to the guide with the id: ${guideId}?`)) {
+    if (confirm(`Are you sure that you want to add these tags: ${selectedTags} to the guide with the id: ${guideId}?`)) {
         // Send the POST request using fetch
         fetch('/addTagToGuide', {
             method: 'POST',
