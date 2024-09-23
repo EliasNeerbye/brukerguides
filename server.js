@@ -46,28 +46,31 @@ app.use(session({
 }));
 
 
-// Route to render the index page with a list of guides
 app.get('/', async (req, res) => {
     try {
         // Fetch all guides from the database
         const guides = await Guide.find();
 
+        // Fetch all tags from the database (if needed)
+        const tags = await Tag.find();
+
         // Transform the guide data into a list of objects with id and title
         const guideList = guides.map(guide => ({
             id: guide._id,
             name: guide.title,
+            tags: guide.tags,
             updated: guide.updatedAt,
             created: guide.createdAt
         }));
 
-        // Render the index view with the list of guides
-        res.render('index', { guides: guideList });
+        // Render the index view with the list of guides and tags
+        res.render('index', { guides: guideList, tags: tags });
     } catch (err) {
-        // Handle errors (e.g., database errors)
         console.error(err);
         res.status(500).send('Server error');
     }
 });
+
 
 
 // Signup route to create a default user

@@ -127,8 +127,8 @@ textarea:focus{
 
 .select2-container--default .select2-selection--multiple{
     background-color: transparent;
-    border: 2px solid;
-    color: aquamarine;
+    border: 1px solid;
+    color: azure;
 }
 
 .select2-container--default.select2-container--focus .select2-selection--multiple {

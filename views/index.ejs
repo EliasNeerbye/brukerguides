@@ -1,74 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Home</title>
-        <link rel="stylesheet" href="styles/home.css">
-    </head>
-    <body>
-        <%- include("partials/header") %>
-        <% if (guides && guides.length > 0) { %>
-            <script>
-                addUnderline();
-                const guideList = <%- JSON.stringify(guides) %>;    
-            </script>
-        <% } else { %>
-            <script>
-                addUnderline();    
-            </script>
-        <% } %>
-        <main>
-            <h1>Brukerguider for alle slags ting</h1>
-            <section id="searchBar"><input type="text" name="search" id="searchInput" placeholder="Søk..." oninput="search()"><img src="assets/searchIcon.png"></section>
-            <section id="guideList">
-                <% if (guides && guides.length > 0) { %>
-                    <% for (let i = 0; i < guides.length; i++) {
-                        const element = guides[i]; %>
-                        <article class="guideDisplay" onclick="openGuide('<%- element.id %>')">
-                            <h2><%- element.name %></h2>
-                        </article>
-                    <% } %>
-                <% } else { %>
-                    <article class="guideDisplay" onclick="openGuide('default')">
-                        <h2>Example Article</h2>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="styles/home.css">
+</head>
+<body>
+    <%- include("partials/header") %>
+
+    <main>
+        <h1>Brukerguider for alle slags ting</h1>
+
+        <section id="filterSection">
+            <select id="tagFilter" onchange="filterGuides()">
+                <option value="">All Tags</option>
+                <% tags.forEach(tag => { %>
+                    <option value="<%= tag._id %>"><%= tag.name %></option>
+                <% }); %>
+            </select>
+
+            <select id="sortOrder" onchange="sortGuides()">
+                <option value="updated">Sort by Update Date</option>
+                <option value="created">Sort by Creation Date</option>
+            </select>
+        </section>
+
+        <section id="searchBar">
+            <input type="text" name="search" id="searchInput" placeholder="Søk..." oninput="search()">
+            <img src="assets/searchIcon.png">
+        </section>
+
+        <section id="guideList">
+            <% if (guides && guides.length > 0) { %>
+                <% for (let i = 0; i < guides.length; i++) {
+                    const element = guides[i]; %>
+                    <article class="guideDisplay" onclick="openGuide('<%- element.id %>')">
+                        <h2><%- element.name %></h2>
+                        <input type="hidden" class="tagIds" value="<%= element.tags.join(',') %>">
                     </article>
-                <% } %>                
-            </section>
-        </main>
-        <script>
-            function openGuide(guideName) {
-                if (guideName == 'default') {
-                    window.location.href = "/guide";
+                <% } %>
+            <% } else { %>
+                <article class="guideDisplay" onclick="openGuide('default')">
+                    <h2>Example Article</h2>
+                </article>
+            <% } %>
+        </section>
+    </main>
+
+    <script>
+        const guideList = <%- JSON.stringify(guides) %>;
+
+        function openGuide(guideName) {
+            if (guideName == 'default') {
+                window.location.href = "/guide";
+            } else {
+                window.location.href = "/guide/" + guideName;
+            }
+        }
+
+        function search() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const articles = document.querySelectorAll('.guideDisplay');
+
+            articles.forEach(article => {
+                const title = article.querySelector('h2').textContent.toLowerCase();
+                if (title.includes(query)) {
+                    article.style.display = "";
                 } else {
-                    window.location.href = "/guide/" + guideName;
+                    article.style.display = "none";
                 }
-            }
+            });
+        }
 
-            function search() {
-                // Get the search query
-                const query = document.getElementById('searchInput').value.toLowerCase();
-                
-                // Get all the article elements in the guideList
-                const articles = document.querySelectorAll('.guideDisplay');
-                
-                // Loop through each article
-                articles.forEach(article => {
-                    // Get the h2 text content of the current article and convert to lowercase
-                    const title = article.querySelector('h2').textContent.toLowerCase();
-                    
-                    // Check if the title contains the search query
-                    if (title.includes(query)) {
-                        // If yes, show the article
-                        article.style.display = "";
-                    } else {
-                        // If no, hide the article
-                        article.style.display = "none";
-                    }
-                });
-            }
+        function filterGuides() {
+            const selectedTagId = document.getElementById('tagFilter').value;
+            const filteredGuides = guideList.filter(guide => 
+                selectedTagId ? guide.tags.includes(selectedTagId) : true
+            );
+            renderGuides(filteredGuides);
+        }
 
-        </script>
+        function sortGuides() {
+            const sortOrder = document.getElementById('sortOrder').value;
+            const sortedGuides = [...guideList].sort((a, b) => 
+                sortOrder === 'updated' ? new Date(b.updated) - new Date(a.updated) : new Date(b.created) - new Date(a.created)
+            );
+            renderGuides(sortedGuides);
+        }
 
-    </body>
+        function renderGuides(guides) {
+            const guideListElement = document.getElementById('guideList');
+            guideListElement.innerHTML = ''; // Clear existing guides
+
+            guides.forEach(guide => {
+                const article = document.createElement('article');
+                article.className = 'guideDisplay';
+                article.onclick = () => openGuide(guide.id);
+                article.innerHTML = `<h2>${guide.name}</h2><input type="hidden" class="tagIds" value="${guide.tags.join(',')}">`;
+                guideListElement.appendChild(article);
+            });
+        }
+    </script>
+
+</body>
 </html>

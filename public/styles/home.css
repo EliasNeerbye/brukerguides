@@ -65,3 +65,31 @@ main{
     background-color: #FFFFFF44;
     color: aquamarine;
 }
+
+#filterSection {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+#tagFilter, #sortOrder {
+    background-color: transparent;
+    color: aliceblue;
+    border: 1px solid aquamarine;
+    border-radius: 4px;
+    padding: 5px;
+    width: 45%; /* Adjusted width for better spacing */
+    transition: border-color 0.2s;
+}
+
+#tagFilter:focus, #sortOrder:focus {
+    outline: none;
+    border-color: aquamarine; /* Highlight on focus */
+}
+
+#tagFilter option, #sortOrder option {
+    background-color: black; /* Background for dropdown options */
+    color: aliceblue; /* Text color for dropdown options */
+}
