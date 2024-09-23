@@ -112,7 +112,7 @@ h2{
 
 .guideText{
     display: block;
-    width: 100%;
+    max-width: 95%;
     align-self: center;
     justify-self: center;
 }
