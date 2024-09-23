@@ -50,24 +50,21 @@ function addSection() {
     }
 }
 
-// Function to add a new div to a specific section
 function addDiv(sectionId) {
     const section = document.getElementById(sectionId);
     
     if (!divCounts[sectionId]) {
-        divCounts[sectionId] = 0; // Initialize div count if not done already
+        divCounts[sectionId] = 0;
     }
 
-    divCounts[sectionId]++; // Increment the div count for this section
+    divCounts[sectionId]++;
     const divCount = divCounts[sectionId];
     const newDivId = `${sectionId}Div${divCount}`;
 
-    // Create a new div element
     const newDiv = document.createElement("div");
     newDiv.id = newDivId;
     newDiv.classList.add("sectionContent");
 
-    // Create a div for paragraph input and ID
     const paragraphDiv = document.createElement("div");
     paragraphDiv.classList.add("sectionParagraph");
 
@@ -81,13 +78,12 @@ function addDiv(sectionId) {
     paragraphIdInput.type = "text";
     paragraphIdInput.name = `${sectionId}P${divCount}Id`;
     paragraphIdInput.id = `${sectionId}P${divCount}Id`;
-    paragraphIdInput.classList.add("idInput"); // Added class
+    paragraphIdInput.classList.add("idInput");
     paragraphIdInput.placeholder = "Id?";
 
     paragraphDiv.appendChild(paragraphInput);
     paragraphDiv.appendChild(paragraphIdInput);
 
-    // Create a label and image input
     const imageLabel = document.createElement("label");
     imageLabel.setAttribute("for", `${sectionId}Img${divCount}`);
     imageLabel.classList.add("sectionImgLabel");
@@ -95,41 +91,95 @@ function addDiv(sectionId) {
     const imageLabelText = document.createElement("p");
     imageLabelText.textContent = "Select Image";
 
-
     imageLabel.appendChild(imageLabelText);
 
     const imageInput = document.createElement("input");
     imageInput.type = "file";
     imageInput.name = `${sectionId}Img${divCount}`;
     imageInput.classList.add("sectionImageInput");
-    imageInput.id = `${sectionId}Img${divCount}`; // Added ID
+    imageInput.id = `${sectionId}Img${divCount}`;
     imageInput.title = "Image";
-    imageInput.onchange = () => handleFileChange(imageInput); // Adjust handler if necessary
-
-    imageLabel.appendChild(imageInput); // Append image input to label
+    imageInput.onchange = () => handleFileChange(imageInput);
 
     const imgUrlInput = document.createElement("input");
     imgUrlInput.type = "hidden";
-    imgUrlInput.name = `${sectionId}Img${divCount}Url`; // Generate name based on section and index
-    imgUrlInput.id = `${sectionId}Img${divCount}Url`; // Generate ID based on section and index
-    imgUrlInput.value = ""; // Initialize with an empty value; set it elsewhere
+    imgUrlInput.name = `${sectionId}Img${divCount}Url`;
+    imgUrlInput.id = `${sectionId}Img${divCount}Url`;
+    imgUrlInput.value = "";
 
+    imageLabel.appendChild(imageInput);
     imageLabel.appendChild(imgUrlInput);
 
-    // Create a button to delete this div
+    // Add drag-and-drop functionality
+    imageLabel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        imageLabel.classList.add('dragover');
+    });
+
+    imageLabel.addEventListener('dragleave', () => {
+        imageLabel.classList.remove('dragover');
+    });
+
+    imageLabel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        imageLabel.classList.remove('dragover');
+        handleImageDrop(e.dataTransfer.files, imageInput);
+    });
+
+    // Add paste functionality
+    newDiv.addEventListener('paste', (e) => {
+        handlePaste(e, imageInput);
+    });
+
     const deleteDivButton = document.createElement("button");
     deleteDivButton.textContent = "Delete div";
     deleteDivButton.type = "button"
     deleteDivButton.onclick = () => deleteDiv(sectionId, newDivId);
 
-    // Append paragraphDiv, imageLabel, and deleteDivButton to the new div
     newDiv.appendChild(paragraphDiv);
     newDiv.appendChild(imageLabel);
     newDiv.appendChild(deleteDivButton);
 
-    // Append the new div to the section
     section.appendChild(newDiv);
+
+    console.log(`New div added: ${newDivId}`);
 }
+
+function handleImageDrop(files, imageInput) {
+    if (files && files[0]) {
+        imageInput.files = files;
+        console.log('Image dropped:', files[0].name);
+        handleFileChange(imageInput);
+    }
+}
+
+function handlePaste(e, imageInput) {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+            const blob = item.getAsFile();
+            const files = new DataTransfer();
+            files.items.add(blob);
+            imageInput.files = files.files;
+            console.log('Image pasted:', blob.name);
+            handleFileChange(imageInput);
+            break;
+        }
+    }
+}
+
+function handleFileChange(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        console.log('File selected:', file.name);
+        const label = input.closest('label');
+        const labelText = label.querySelector('p');
+        labelText.textContent = 'Image selected';
+        label.classList.add('file-selected');
+    }
+}
+
+
 
 // Function to delete a section
 function deleteSection(sectionId) {

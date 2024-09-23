@@ -80,7 +80,7 @@ app.get('/api/check-auth', (req, res) => {
 // Signup route to create a default user
 // app.get('/signup/default', async (req, res) => {
 //     const defaultUsername = 'Blank';
-//     const defaultPassword = 'Isja54321';  // You can set any password you like
+//     const defaultPassword = 'CoolPassword';  // You can set any password you like
 
 //     try {
 //         // Check if the user already exists
