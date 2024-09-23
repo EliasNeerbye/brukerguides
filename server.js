@@ -222,6 +222,8 @@ app.get('/guide', async (req, res) => {
     return res.render("guideDefault");
 });
 
+const crypto = require('crypto');
+
 app.post("/makeGuide", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/login");
@@ -234,62 +236,75 @@ app.post("/makeGuide", async (req, res) => {
         let sectionIndex = 1;
 
         while (body[`section${sectionIndex}H2`]) {
-        const sectionHeader = body[`section${sectionIndex}H2`];
-        const paragraphs = [];
-        const images = [];
-        let paragraphIndex = 1;
-        let imageIndex = 1;
+            const sectionHeader = body[`section${sectionIndex}H2`];
+            const paragraphs = [];
+            const images = [];
+            let paragraphIndex = 1;
+            let imageIndex = 1;
 
-        while (body[`section${sectionIndex}P${paragraphIndex}`]) {
-            paragraphs.push({
-            text: body[`section${sectionIndex}P${paragraphIndex}`],
-            id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
-            pIndex: paragraphIndex
+            while (body[`section${sectionIndex}P${paragraphIndex}`]) {
+                paragraphs.push({
+                    text: body[`section${sectionIndex}P${paragraphIndex}`],
+                    id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
+                    pIndex: paragraphIndex
+                });
+                paragraphIndex++;
+            }
+
+            while (files[`section${sectionIndex}Img${imageIndex}`]) {
+                const file = files[`section${sectionIndex}Img${imageIndex}`];
+                const uniqueFilename = await generateUniqueFilename(file.name);
+                const filePath = path.join('./public/uploads', uniqueFilename);
+                await file.mv(filePath);
+                images.push({
+                    url: `/uploads/${uniqueFilename}`,
+                    filename: uniqueFilename,
+                    imgIndex: imageIndex
+                });
+                imageIndex++;
+            }
+
+            sections.push({
+                header: sectionHeader,
+                paragraphs,
+                images,
+                index: sectionIndex
             });
-            paragraphIndex++;
-        }
 
-        while (files[`section${sectionIndex}Img${imageIndex}`]) {
-            const file = files[`section${sectionIndex}Img${imageIndex}`];
-            const filePath = `./public/uploads/${file.name}`;
-            await file.mv(filePath); // Save the file to disk
-            images.push({
-            url: `/uploads/${file.name}`,
-            filename: file.name,
-            imgIndex: imageIndex
-            });
-            imageIndex++;
-        }
-
-        sections.push({
-            header: sectionHeader,
-            paragraphs,
-            images,
-            index: sectionIndex
-        });
-
-        sectionIndex++;
+            sectionIndex++;
         }
 
         const guide = new Guide({
-        title,
-        sections
+            title,
+            sections,
+            author: req.session.user._id
         });
 
-        const tagsFound = await Tag.find({ name: { $in: tags } });
-        tagsFound.forEach(tag => {
-            if (!guide.tags.includes(tag._id)) {
-                guide.tags.push(tag._id);
-            }
-        });
+        // Handle tags
+        if (tags) {
+            const tagIds = Array.isArray(tags) ? tags : [tags];
+            guide.tags = tagIds;
+            console.log('Tags added to guide:', tagIds);
+        }
+
         await guide.save();
+        console.log('Guide saved with tags:', guide.tags);
 
         res.redirect('/guide/'+guide._id);
     } catch (error) {
-        console.error(error);
+        console.error('Error in makeGuide:', error);
         res.status(500).send('Internal Server Error');
     }
 });
+
+async function generateUniqueFilename(originalFilename) {
+    const ext = path.extname(originalFilename);
+    const baseFilename = path.basename(originalFilename, ext);
+    const timestamp = Date.now();
+    const randomString = crypto.randomBytes(8).toString('hex');
+    return `${baseFilename}_${timestamp}_${randomString}${ext}`;
+}
+
 
 app.post('/editGuide', async (req, res) => {
     // Check if user is logged in
