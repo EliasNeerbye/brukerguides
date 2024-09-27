@@ -63,6 +63,8 @@ app.get('/', async (req, res) => {
             created: guide.createdAt
         }));
 
+        guideList.reverse();
+
         // Render the index view with the list of guides and tags
         res.render('index', { guides: guideList, tags: tags });
     } catch (err) {
