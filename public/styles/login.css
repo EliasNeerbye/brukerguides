@@ -49,7 +49,7 @@ input:focus{
     margin-top: 10px;
 }
 
-a{
+a:not(#homeLink){
     font-size: 0.75rem;
     color: aquamarine;
 }
