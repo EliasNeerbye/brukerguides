@@ -612,6 +612,12 @@ app.post('/addTagToGuide', async (req, res) => {
 
             if (!guide) {
                 return res.status(404).json({ message: 'Guide not found.' });
+            } else {
+                const ownr = await User.findById(req.session.user._id)
+                const ownrId = ownr._id;
+                if (!guide.creator.equals(ownrId)){
+                    return res.status(401).json({ message: "Guide not yours... >:("});
+                }
             }
 
             // Find all tags that match the selected tags
