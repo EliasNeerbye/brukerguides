@@ -18,8 +18,9 @@
                 <% } %>
             <% }) %>
         <% }) %>
-        <% if (isLoggedIn) { %>
-            <button onclick="deleteGuide()" id="delBtnCool">Delete Guide</button>
+        <% if (isOwner) { %>
+            <button onclick="editGuide()" id="editBtnCool" class="coolExtraButtons">Edit Guide</button>
+            <button onclick="deleteGuide()" id="delBtnCool" class="coolExtraButtons">Delete Guide</button>
             <script>
                 function deleteGuide() {
                     const id = "<%= guide._id %>";
@@ -44,6 +45,12 @@
                             window.location.href = "/";
                         });
                     }
+                }
+            </script>
+            <script>
+                function editGuide() {
+                    const id = "<%= guide._id %>";
+                    window.location.href = "/dashboard?id=" + id;
                 }
             </script>
         <% } %>

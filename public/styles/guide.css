@@ -135,7 +135,7 @@ h2{
     scroll-margin-top: 250px;
 }
 
-#delBtnCool{
+.coolExtraButtons{
     display: block;
     width: 80%;
     margin: auto;

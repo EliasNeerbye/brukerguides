@@ -3,19 +3,19 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Login page</title>
-        <link rel="stylesheet" href="styles/login.css">
+        <title>Signup Page</title>
+        <link rel="stylesheet" href="styles/login.css"> <!-- Update the stylesheet path if needed -->
     </head>
     <body>
         <%- include("partials/header") %>
         <main>
-            <h1>Logg Inn</h1>
+            <h1>Sign Up</h1>
             <input type="text" name="username" id="usernameInput" placeholder="Brukernavn" maxlength="16" minlength="3" required>
             <input type="password" name="password" id="password" placeholder="Passord" minlength="4" maxlength="30" required>
-            <button id="submitBtn">Logg inn</button>
-            <a href="/signup">Eller registrer en ny bruker...</a>
+            <button id="submitBtn">Registrer</button>
+            <a href="/login">Eller logg inn...</a>
         </main>
         <p id="errorMsg"></p>
-        <script src="js/loginScript.js"></script>
+        <script src="/js/signupScript.js"></script>
     </body>
 </html>

@@ -27,7 +27,6 @@ const Guide = require("./models/guide");
 const Tag = require("./models/tag");
 
 
-
 mongoose.connect('mongodb://localhost:27017/brukerguides')
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Connection error', err));
@@ -79,36 +78,64 @@ app.get('/api/check-auth', (req, res) => {
     res.json({ loggedIn });
 });
 
-// Signup route to create a default user
-// app.get('/signup/default', async (req, res) => {
-//     const defaultUsername = 'Blank';
-//     const defaultPassword = 'CoolPassword';  // You can set any password you like
+app.get('/signup', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/dashboard');
+    }
+    res.render('signup');
+});
 
-//     try {
-//         // Check if the user already exists
-//         const existingUser = await User.findOne({ username: defaultUsername });
-//         if (existingUser) {
-//             return res.status(400).json({ success: false, message: 'Default user already exists.' });
-//         }
 
-//         // Hash the default password
-//         const salt = await bcrypt.genSalt(10);
-//         const passwordHash = await bcrypt.hash(defaultPassword, salt);
+app.post('/signup/submit', async (req, res) => {
+    const { username, password } = req.body;
 
-//         // Create and save the default user
-//         const newUser = new User({
-//             username: defaultUsername,
-//             passwordHash
-//         });
+    // Input validation
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Username and password are required.' });
+    }
 
-//         await newUser.save();
+    // Username validation: between 3 and 16 characters
+    if (username.length < 3 || username.length > 16) {
+        return res.status(400).json({ success: false, message: 'Username must be between 3 and 16 characters.' });
+    }
 
-//         res.json({ success: true, message: 'Default user created successfully.' });
-//     } catch (error) {
-//         console.error('Error during default user creation:', error);
-//         res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
-//     }
-// });
+    // Password validation: between 4 and 30 characters
+    if (password.length < 4 || password.length > 30) {
+        return res.status(400).json({ success: false, message: 'Password must be between 4 and 30 characters.' });
+    }
+
+    try {
+        // Check if the user already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: 'Username already taken.' });
+        }
+
+        // Hash the user's password
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        // Create and save the new user
+        const newUser = new User({
+            username: username,
+            passwordHash: passwordHash
+        });
+
+        await newUser.save();
+
+        // Automatically log in the user after signup
+        req.session.user = {
+            _id: newUser._id,
+            username: newUser.username
+        };
+
+        return res.status(201).json({ success: true, message: 'User created successfully and logged in.' });
+    } catch (error) {
+        console.error('Error during signup:', error);
+        return res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+    }
+});
+
 
 
 app.get('/login', (req, res) => {
@@ -145,7 +172,7 @@ app.post('/login/submit', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (isMatch) {
         req.session.user = {
-            id: user._id,
+            _id: user._id,
             username: user.username
         };
         
@@ -205,14 +232,22 @@ app.get('/guide/:id', async (req, res) => {
         }
 
         let isLoggedIn;
+        let isOwner;
         if (!req.session.user){
             isLoggedIn = false;
         } else {
             isLoggedIn = true;
+            const maybeOwner = await User.findById(req.session.user._id)
+            const maybeOwnerId = maybeOwner._id
+            if (guide.creator.equals(maybeOwnerId)){
+                isOwner = true;
+            } else {
+                isOwner = false;
+            }
         }
 
         // Render the guide view with the retrieved guide data
-        res.render('guide', { guide , isLoggedIn });
+        res.render('guide', { guide , isLoggedIn, isOwner });
     } catch (err) {
         // Handle errors, e.g., database errors
         console.error(err);
@@ -279,7 +314,7 @@ app.post("/makeGuide", async (req, res) => {
         const guide = new Guide({
             title,
             sections,
-            author: req.session.user._id
+            creator: req.session.user._id
         });
 
         // Handle tags
@@ -319,11 +354,22 @@ app.post('/editGuide', async (req, res) => {
         const guide = await Guide.findById(req.body.id);
 
         if (guide) {
-            // Return guide if found
-            return res.json({
-                success: true,
-                guide: guide
+            const user = await User.findById(req.session.user._id);
+            const userId = user._id
+
+            if (guide.creator.equals(userId)) {
+                // Return guide if found
+                return res.json({
+                    success: true,
+                    guide: guide
+                });
+            } else {
+                // Return error if guide was not authorized
+                return res.status(401).json({
+                success: false,
+                message: "You do not have permission to edit this guide!"
             });
+            }
         } else {
             // Return error if guide was not found
             return res.status(404).json({
@@ -585,6 +631,7 @@ app.post('/addTagToGuide', async (req, res) => {
             res.status(500).json({ message: 'An error occurred while adding tags to the guide.', error });
         }}
 });
+
 
 
 // 404 Error Handler (catch-all for unhandled routes)

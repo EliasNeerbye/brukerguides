@@ -18,7 +18,8 @@ const SectionSchema = new mongoose.Schema({
 const GuideSchema = new mongoose.Schema({
   title: { type: String, required: true },
   sections: [SectionSchema],
-  tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }]
+  tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
+  creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 }, { timestamps: true });
 
 const Guide = mongoose.model('Guide', GuideSchema);
