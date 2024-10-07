@@ -499,6 +499,14 @@ app.post('/deleteGuide/:id', async (req, res) => {
             return res.status(404).send({ message: "Guide not found." });
         }
 
+        if (guide){
+            const ownerQuestionMark = await User.findById(req.session.user._id);
+            const ownerQM_ID = ownerQuestionMark._id;
+            if (!guide.creator.equals(ownerQM_ID)){
+                return res.status(401).send({ message: "You do not own this guide!"});
+            }
+        }
+
         // Extract image URLs from all sections
         const imgUrls = guide.sections.flatMap(section => 
             section.images.map(image => image.url)
