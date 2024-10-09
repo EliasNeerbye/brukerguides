@@ -321,11 +321,9 @@ app.post("/makeGuide", async (req, res) => {
         if (tags) {
             const tagIds = Array.isArray(tags) ? tags : [tags];
             guide.tags = tagIds;
-            console.log('Tags added to guide:', tagIds);
         }
 
         await guide.save();
-        console.log('Guide saved with tags:', guide.tags);
 
         res.redirect('/guide/'+guide._id);
     } catch (error) {
