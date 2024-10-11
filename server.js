@@ -317,7 +317,7 @@ app.post("/makeGuide", async (req, res) => {
                         console.error(`Error processing file ${file.name}:`, fileError);
                         const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
                         images.push({
-                            url: `https://picsum.photos/360/640`, // Fallback image
+                            url: `https://picsum.photos/200`, // Fallback image
                             filename: 'default-image.jpg',
                             imgIndex: parseInt(imgIndex)
                         });
@@ -330,7 +330,7 @@ app.post("/makeGuide", async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!images.some(img => img.imgIndex === parseInt(imgIndex))) {
-                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/360/640`; // Use fallback if empty
+                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/200`; // Use fallback if empty
                     images.push({
                         url: imageUrl,
                         filename: imageUrl.split('/').pop() || 'default-image.jpg',
@@ -485,7 +485,7 @@ app.post('/saveGuide/:id', async (req, res) => {
                         console.error(`Error processing file ${file.name}:`, fileError);
                         const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
                         newSection.images.push({
-                            url: `https://picsum.photos/360/640`, // Fallback image
+                            url: `https://picsum.photos/200`, // Fallback image
                             filename: 'default-image.jpg',
                             imgIndex: parseInt(imgIndex),
                         });
@@ -498,7 +498,7 @@ app.post('/saveGuide/:id', async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!newSection.images.some(img => img.imgIndex === parseInt(imgIndex))) {
-                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/360/640`; // Use fallback if empty
+                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/200`; // Use fallback if empty
                     newSection.images.push({
                         url: imageUrl,
                         filename: imageUrl.split('/').pop() || 'default-image.jpg',
