@@ -320,8 +320,26 @@ app.post("/makeGuide", async (req, res) => {
         // Handle tags
         if (tags) {
             const tagIds = Array.isArray(tags) ? tags : [tags];
-            guide.tags = tagIds;
+
+            // Function to check if a string is a valid ObjectId
+            const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+
+            // Create an array of promises to check for existence of each valid tag ID
+            const tagExistsPromises = tagIds.map(async (tagId) => {
+                if (isValidObjectId(tagId)) { // Check if tagId is a valid ObjectId
+                    const tagExists = await Tag.findById(tagId);
+                    return tagExists ? tagId : null; // Return the tagId if it exists, otherwise return null
+                }
+                return null; // If not a valid ObjectId, return null
+            });
+
+            // Wait for all promises to resolve
+            const results = await Promise.all(tagExistsPromises);
+            
+            // Filter out null values (non-existing tags or invalid ObjectIds)
+            guide.tags = results.filter(Boolean); // Filter out null values
         }
+
 
         await guide.save();
 
