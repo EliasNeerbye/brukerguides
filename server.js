@@ -261,94 +261,7 @@ app.get('/guide', async (req, res) => {
 
 const crypto = require('crypto');
 
-app.post("/makeGuide", async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect("/login");
-    }
-    try {
-        const { title, tags, ...body } = req.body;
-        const files = req.files;
 
-        const sections = [];
-        let sectionIndex = 1;
-
-        while (body[`section${sectionIndex}H2`]) {
-            const sectionHeader = body[`section${sectionIndex}H2`];
-            const paragraphs = [];
-            const images = [];
-            let paragraphIndex = 1;
-            let imageIndex = 1;
-
-            while (body[`section${sectionIndex}P${paragraphIndex}`]) {
-                paragraphs.push({
-                    text: body[`section${sectionIndex}P${paragraphIndex}`],
-                    id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
-                    pIndex: paragraphIndex
-                });
-                paragraphIndex++;
-            }
-
-            while (files[`section${sectionIndex}Img${imageIndex}`]) {
-                const file = files[`section${sectionIndex}Img${imageIndex}`];
-                const uniqueFilename = await generateUniqueFilename(file.name);
-                const filePath = path.join('./public/uploads', uniqueFilename);
-                await file.mv(filePath);
-                images.push({
-                    url: `/uploads/${uniqueFilename}`,
-                    filename: uniqueFilename,
-                    imgIndex: imageIndex
-                });
-                imageIndex++;
-            }
-
-            sections.push({
-                header: sectionHeader,
-                paragraphs,
-                images,
-                index: sectionIndex
-            });
-
-            sectionIndex++;
-        }
-
-        const guide = new Guide({
-            title,
-            sections,
-            creator: req.session.user._id
-        });
-
-        // Handle tags
-        if (tags) {
-            const tagIds = Array.isArray(tags) ? tags : [tags];
-
-            // Function to check if a string is a valid ObjectId
-            const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
-
-            // Create an array of promises to check for existence of each valid tag ID
-            const tagExistsPromises = tagIds.map(async (tagId) => {
-                if (isValidObjectId(tagId)) { // Check if tagId is a valid ObjectId
-                    const tagExists = await Tag.findById(tagId);
-                    return tagExists ? tagId : null; // Return the tagId if it exists, otherwise return null
-                }
-                return null; // If not a valid ObjectId, return null
-            });
-
-            // Wait for all promises to resolve
-            const results = await Promise.all(tagExistsPromises);
-            
-            // Filter out null values (non-existing tags or invalid ObjectIds)
-            guide.tags = results.filter(Boolean); // Filter out null values
-        }
-
-
-        await guide.save();
-
-        res.redirect('/guide/'+guide._id);
-    } catch (error) {
-        console.error('Error in makeGuide:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
 
 async function generateUniqueFilename(originalFilename) {
     const ext = path.extname(originalFilename);
@@ -358,6 +271,108 @@ async function generateUniqueFilename(originalFilename) {
     return `${baseFilename}_${timestamp}_${randomString}${ext}`;
 }
 
+app.post("/makeGuide", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+    try {
+        const { title, tags, ...body } = req.body;
+        const files = req.files;
+        const sections = [];
+        // Use Object.keys to dynamically collect sections
+        const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
+        for (const sectionKey of sectionKeys) {
+            const sectionIndex = sectionKey.replace('section', '').replace('H2', ''); // Extract the index
+            const sectionHeader = body[sectionKey];
+            const paragraphs = [];
+            const images = [];
+            
+            // Dynamically gather paragraphs
+            const paragraphKeys = Object.keys(body).filter(key => key.startsWith(`section${sectionIndex}P`) && !key.endsWith('Id'));
+            for (const paragraphKey of paragraphKeys) {
+                const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
+                paragraphs.push({
+                    text: body[paragraphKey],
+                    id: body[`section${sectionIndex}P${pIndex}Id`] || '',
+                    pIndex: parseInt(pIndex)
+                });
+            }
+
+            // Dynamically gather images
+            if (files) {
+                const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
+                for (const imageKey of imageKeys) {
+                    const file = files[imageKey];
+                    const uniqueFilename = await generateUniqueFilename(file.name);
+                    const filePath = path.join('./public/uploads', uniqueFilename);
+                    await file.mv(filePath);
+                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                    images.push({
+                        url: `/uploads/${uniqueFilename}`,
+                        filename: uniqueFilename,
+                        imgIndex: parseInt(imgIndex)
+                    });
+                }
+            }
+
+            // Handle image URLs from body
+            const imageUrlKeys = Object.keys(body).filter(key => key.startsWith(`section${sectionIndex}Img`) && key.endsWith('Url'));
+            for (const imageUrlKey of imageUrlKeys) {
+                const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
+                if (!images.some(img => img.imgIndex === parseInt(imgIndex))) {
+                    images.push({
+                        url: body[imageUrlKey],
+                        filename: body[imageUrlKey].split('/').pop(),
+                        imgIndex: parseInt(imgIndex)
+                    });
+                }
+            }
+
+            sections.push({
+                header: sectionHeader,
+                paragraphs,
+                images,
+                index: parseInt(sectionIndex)
+            });
+        }
+
+        // Sort paragraphs and images within each section
+        sections.forEach(section => {
+            section.paragraphs.sort((a, b) => a.pIndex - b.pIndex);
+            section.images.sort((a, b) => a.imgIndex - b.imgIndex);
+        });
+
+        // Sort sections
+        sections.sort((a, b) => a.index - b.index);
+
+        const guide = new Guide({
+            title,
+            sections,
+            creator: req.session.user._id
+        });
+
+        // Handle tags as before
+        if (tags) {
+            const tagIds = Array.isArray(tags) ? tags : [tags];
+            const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+            const tagExistsPromises = tagIds.map(async (tagId) => {
+                if (isValidObjectId(tagId)) {
+                    const tagExists = await Tag.findById(tagId);
+                    return tagExists ? tagId : null;
+                }
+                return null;
+            });
+            const results = await Promise.all(tagExistsPromises);
+            guide.tags = results.filter(Boolean);
+        }
+
+        await guide.save();
+        res.redirect('/guide/' + guide._id);
+    } catch (error) {
+        console.error('Error in makeGuide:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 app.post('/editGuide', async (req, res) => {
     // Check if user is logged in
@@ -407,16 +422,13 @@ app.post('/saveGuide/:id', async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/login');
     }
-
     const guideId = req.params.id;
-
     // Validate the guide ID
     if (!isValidGuideId(guideId)) {
         return res.status(400).send('Invalid guide ID');
     }
-
     try {
-        // Retrieve the existing guide to compare images and sections
+        // Retrieve the existing guide
         const existingGuide = await Guide.findById(guideId);
         if (!existingGuide) {
             return res.status(404).send('Guide not found');
@@ -424,52 +436,74 @@ app.post('/saveGuide/:id', async (req, res) => {
 
         const { title, ...body } = req.body;
         const files = req.files;
-
         const updatedSections = [];
-        let sectionIndex = 1;
 
-        while (body[`section${sectionIndex}H2`]) {
-            const sectionHeader = body[`section${sectionIndex}H2`];
+        // Use Object.keys to dynamically collect sections
+        const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
+        for (const sectionKey of sectionKeys) {
+            const sectionIndex = sectionKey.replace('section', '').replace('H2', '');
+            const sectionHeader = body[sectionKey];
             const newSection = {
                 header: sectionHeader,
                 paragraphs: [],
                 images: [],
-                index: sectionIndex, // Include index here
+                index: parseInt(sectionIndex), // Keep track of the original index
             };
 
             // Update paragraphs
-            let paragraphIndex = 1;
-            while (body[`section${sectionIndex}P${paragraphIndex}`]) {
+            const paragraphKeys = Object.keys(body).filter(key => key.startsWith(`section${sectionIndex}P`) && !key.endsWith('Id'));
+            for (const paragraphKey of paragraphKeys) {
+                const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
                 newSection.paragraphs.push({
-                    text: body[`section${sectionIndex}P${paragraphIndex}`],
-                    id: body[`section${sectionIndex}P${paragraphIndex}Id`] || '',
-                    pIndex: paragraphIndex,
+                    text: body[paragraphKey],
+                    id: body[`section${sectionIndex}P${pIndex}Id`] || '',
+                    pIndex: parseInt(pIndex),
                 });
-                paragraphIndex++;
             }
 
-            // Handle new images
-            let imageIndex = 1;
-            while (files && files[`section${sectionIndex}Img${imageIndex}`]) {
-                const file = files[`section${sectionIndex}Img${imageIndex}`];
-                const filePath = `./public/uploads/${file.name}`;
-                await file.mv(filePath); // Save the file to disk
-                newSection.images.push({
-                    url: `/uploads/${file.name}`,
-                    filename: file.name,
-                    imgIndex: imageIndex,
-                });
-                imageIndex++;
+            // Handle new images (file uploads)
+            if (files) {
+                const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
+                for (const imageKey of imageKeys) {
+                    const file = files[imageKey];
+                    const uniqueFilename = await generateUniqueFilename(file.name);
+                    const filePath = path.join('./public/uploads', uniqueFilename);
+                    await file.mv(filePath);
+                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                    newSection.images.push({
+                        url: `/uploads/${uniqueFilename}`,
+                        filename: uniqueFilename,
+                        imgIndex: parseInt(imgIndex),
+                    });
+                }
             }
+
+            // Handle existing images (URLs in body)
+            const imageUrlKeys = Object.keys(body).filter(key => key.startsWith(`section${sectionIndex}Img`) && key.endsWith('Url'));
+            for (const imageUrlKey of imageUrlKeys) {
+                const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
+                if (!newSection.images.some(img => img.imgIndex === parseInt(imgIndex))) {
+                    newSection.images.push({
+                        url: body[imageUrlKey],
+                        filename: body[imageUrlKey].split('/').pop(),
+                        imgIndex: parseInt(imgIndex),
+                    });
+                }
+            }
+
+            // Sort paragraphs and images
+            newSection.paragraphs.sort((a, b) => a.pIndex - b.pIndex);
+            newSection.images.sort((a, b) => a.imgIndex - b.imgIndex);
 
             updatedSections.push(newSection);
-            sectionIndex++;
         }
+
+        // Sort sections
+        updatedSections.sort((a, b) => a.index - b.index);
 
         // Determine images to delete
         const existingImages = existingGuide.sections.flatMap(section => section.images.map(img => img.filename));
         const newImages = updatedSections.flatMap(section => section.images.map(img => img.filename));
-        
         const imagesToDelete = existingImages.filter(img => !newImages.includes(img));
 
         // Delete previous images from the filesystem
@@ -489,13 +523,13 @@ app.post('/saveGuide/:id', async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        // Redirect to the updated guide's page
         res.redirect('/guide/' + guideId);
     } catch (error) {
         console.error('Error updating guide:', error);
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 app.post('/deleteGuide/:id', async (req, res) => {
     if (!req.session.user) {
