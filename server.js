@@ -283,7 +283,7 @@ app.post("/makeGuide", async (req, res) => {
         const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
         for (const sectionKey of sectionKeys) {
             const sectionIndex = sectionKey.replace('section', '').replace('H2', ''); // Extract the index
-            const sectionHeader = body[sectionKey];
+            const sectionHeader = body[sectionKey] || "Example Header"; // Default header if empty
             const paragraphs = [];
             const images = [];
             
@@ -292,7 +292,7 @@ app.post("/makeGuide", async (req, res) => {
             for (const paragraphKey of paragraphKeys) {
                 const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
                 paragraphs.push({
-                    text: body[paragraphKey],
+                    text: body[paragraphKey] || "Lorem ipsum this was not writtum", // Default paragraph text if empty
                     id: body[`section${sectionIndex}P${pIndex}Id`] || '',
                     pIndex: parseInt(pIndex)
                 });
@@ -303,15 +303,25 @@ app.post("/makeGuide", async (req, res) => {
                 const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
                 for (const imageKey of imageKeys) {
                     const file = files[imageKey];
-                    const uniqueFilename = await generateUniqueFilename(file.name);
-                    const filePath = path.join('./public/uploads', uniqueFilename);
-                    await file.mv(filePath);
-                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                    images.push({
-                        url: `/uploads/${uniqueFilename}`,
-                        filename: uniqueFilename,
-                        imgIndex: parseInt(imgIndex)
-                    });
+                    try {
+                        const uniqueFilename = await generateUniqueFilename(file.name);
+                        const filePath = path.join('./public/uploads', uniqueFilename);
+                        await file.mv(filePath);
+                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                        images.push({
+                            url: `/uploads/${uniqueFilename}`,
+                            filename: uniqueFilename,
+                            imgIndex: parseInt(imgIndex)
+                        });
+                    } catch (fileError) {
+                        console.error(`Error processing file ${file.name}:`, fileError);
+                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                        images.push({
+                            url: `https://picsum.photos/360/640`, // Fallback image
+                            filename: 'default-image.jpg',
+                            imgIndex: parseInt(imgIndex)
+                        });
+                    }
                 }
             }
 
@@ -320,9 +330,10 @@ app.post("/makeGuide", async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!images.some(img => img.imgIndex === parseInt(imgIndex))) {
+                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/360/640`; // Use fallback if empty
                     images.push({
-                        url: body[imageUrlKey],
-                        filename: body[imageUrlKey].split('/').pop(),
+                        url: imageUrl,
+                        filename: imageUrl.split('/').pop() || 'default-image.jpg',
                         imgIndex: parseInt(imgIndex)
                     });
                 }
@@ -336,17 +347,11 @@ app.post("/makeGuide", async (req, res) => {
             });
         }
 
-        // Sort paragraphs and images within each section
-        sections.forEach(section => {
-            section.paragraphs.sort((a, b) => a.pIndex - b.pIndex);
-            section.images.sort((a, b) => a.imgIndex - b.imgIndex);
-        });
-
         // Sort sections
         sections.sort((a, b) => a.index - b.index);
 
         const guide = new Guide({
-            title,
+            title: title || "This needs to be changed", // Default title if empty
             sections,
             creator: req.session.user._id
         });
@@ -442,7 +447,7 @@ app.post('/saveGuide/:id', async (req, res) => {
         const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
         for (const sectionKey of sectionKeys) {
             const sectionIndex = sectionKey.replace('section', '').replace('H2', '');
-            const sectionHeader = body[sectionKey];
+            const sectionHeader = body[sectionKey] || "Example Header"; // Default header if empty
             const newSection = {
                 header: sectionHeader,
                 paragraphs: [],
@@ -455,7 +460,7 @@ app.post('/saveGuide/:id', async (req, res) => {
             for (const paragraphKey of paragraphKeys) {
                 const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
                 newSection.paragraphs.push({
-                    text: body[paragraphKey],
+                    text: body[paragraphKey] || "Lorem ipsum this was not writtum", // Default paragraph text if empty
                     id: body[`section${sectionIndex}P${pIndex}Id`] || '',
                     pIndex: parseInt(pIndex),
                 });
@@ -466,15 +471,25 @@ app.post('/saveGuide/:id', async (req, res) => {
                 const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
                 for (const imageKey of imageKeys) {
                     const file = files[imageKey];
-                    const uniqueFilename = await generateUniqueFilename(file.name);
-                    const filePath = path.join('./public/uploads', uniqueFilename);
-                    await file.mv(filePath);
-                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                    newSection.images.push({
-                        url: `/uploads/${uniqueFilename}`,
-                        filename: uniqueFilename,
-                        imgIndex: parseInt(imgIndex),
-                    });
+                    try {
+                        const uniqueFilename = await generateUniqueFilename(file.name);
+                        const filePath = path.join('./public/uploads', uniqueFilename);
+                        await file.mv(filePath);
+                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                        newSection.images.push({
+                            url: `/uploads/${uniqueFilename}`,
+                            filename: uniqueFilename,
+                            imgIndex: parseInt(imgIndex),
+                        });
+                    } catch (fileError) {
+                        console.error(`Error processing file ${file.name}:`, fileError);
+                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                        newSection.images.push({
+                            url: `https://picsum.photos/360/640`, // Fallback image
+                            filename: 'default-image.jpg',
+                            imgIndex: parseInt(imgIndex),
+                        });
+                    }
                 }
             }
 
@@ -483,9 +498,10 @@ app.post('/saveGuide/:id', async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!newSection.images.some(img => img.imgIndex === parseInt(imgIndex))) {
+                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/360/640`; // Use fallback if empty
                     newSection.images.push({
-                        url: body[imageUrlKey],
-                        filename: body[imageUrlKey].split('/').pop(),
+                        url: imageUrl,
+                        filename: imageUrl.split('/').pop() || 'default-image.jpg',
                         imgIndex: parseInt(imgIndex),
                     });
                 }
@@ -519,7 +535,10 @@ app.post('/saveGuide/:id', async (req, res) => {
         // Update only changed fields in the guide
         await Guide.findByIdAndUpdate(
             guideId,
-            { title, sections: updatedSections },
+            { 
+                title: title || "This needs to be changed", // Default title if empty
+                sections: updatedSections 
+            },
             { new: true, runValidators: true }
         );
 
