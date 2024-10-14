@@ -2,3 +2,4 @@ node_modules
 vars
 public/uploads
 .env
+cliendID.json
