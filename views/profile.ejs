@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Home</title>
+        <link rel="stylesheet" href="/styles/profile.css">
+    </head>
+    <body>
+        <%- include("partials/header") %>
+        <main>
+            <h1>Hello <%= user.username %>!</h1>
+            <button onclick="resetPassword()">Change password</button>
+            <button onclick="delMe()">Delete this profile</button>
+            <button onclick="window.location.href = '/logout'">Logout</button>
+        </main>
+        <script src="/js/profile.js"></script>
+    </body>
+</html>

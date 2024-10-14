@@ -2,6 +2,7 @@ document.getElementById("submitBtn").addEventListener("click", async (e) => {
     e.preventDefault(); // Prevent the default form submission
 
     const username = document.getElementById("usernameInput").value;
+    const email = document.getElementById("emailInput").value;
     const password = document.getElementById("password").value;
 
     try {
@@ -10,7 +11,7 @@ document.getElementById("submitBtn").addEventListener("click", async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify({ username, email, password }),
         });
 
         const result = await response.json();

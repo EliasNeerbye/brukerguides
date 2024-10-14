@@ -1,0 +1,70 @@
+/* General Resets */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    background-color: black; /* Consistent with the rest of the website */
+    color: lime; /* Text color */
+    font-family: monospace; /* Font family */
+    font-size: 16px; /* Base font size */
+}
+
+/* Selection styles */
+::selection {
+    color: white; /* Selected text color */
+    background-color: darkorange; /* Selected background color */
+}
+
+/* Main container styles */
+main {
+    width: 85%; /* Width of the main container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align */
+    margin: auto; /* Center on the page */
+    gap: 40px; /* Space between elements */
+}
+
+/* Title styles */
+h1 {
+    font-size: 2rem; /* Increased font size for the title */
+    text-align: center; /* Center alignment */
+}
+
+/* Button styles */
+button {
+    height: 40px; /* Button height */
+    width: 200px; /* Fixed width for buttons */
+    background-color: #FFFFFF19; /* Background color */
+    color: aliceblue; /* Text color */
+    border: 1px solid; /* Border styling */
+    border-radius: 10px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition-duration: 0.3s; /* Transition effect */
+    font-size: 1rem; /* Font size for buttons */
+    margin-top: 10px; /* Margin for spacing */
+}
+
+/* Button hover effect */
+button:hover {
+    background-color: #FFFFFF44; /* Hover background */
+    color: aquamarine; /* Hover text color */
+}
+
+/* Additional hover effect for buttons */
+button:focus {
+    outline: none; /* Remove default focus outline */
+    border-color: aquamarine; /* Change border color on focus */
+}
+
+/* Style for alerts or messages (if needed) */
+#alertMsg {
+    font-size: 0.9rem; /* Font size */
+    color: aquamarine; /* Text color */
+    margin-top: 20px; /* Spacing above */
+    text-align: center; /* Center alignment */
+}

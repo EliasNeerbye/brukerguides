@@ -6,7 +6,7 @@
     <a href="/" id="homeLink">Guides</a>
     <div id="buttonsDiv">
         <button id="dashboardBtn" style="display: none;">Dashboard</button>
-        <button id="logoutBtn" style="display: none;">Logg ut</button>
+        <button id="logoutBtn" style="display: none;">Profile</button>
         <button id="loginBtn" style="display: none;">Logg inn</button>
     </div>
 </header>
@@ -25,7 +25,7 @@
                 });
 
                 document.getElementById("logoutBtn").addEventListener("click", () => {
-                    window.location.href = "/logout";
+                    window.location.href = "/profile";
                 });
             } else {
                 document.getElementById("loginBtn").style.display = 'block';

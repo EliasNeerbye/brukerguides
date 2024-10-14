@@ -6,9 +6,11 @@ const favicon = require("serve-favicon");
 const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const fileUpload = require('express-fileupload');
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
+const nodemailer = require('nodemailer');
 
 
 app.set('view engine', 'ejs');
@@ -32,17 +34,34 @@ mongoose.connect('mongodb://localhost:27017/brukerguides')
     .catch(err => console.error('Connection error', err));
 
 
+// Configure session middleware to use MongoDB store
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default-secret-key',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ 
+        mongoUrl: 'mongodb://localhost:27017/brukerguides', // MongoDB connection URL
+        collectionName: 'sessions', // Optional: name of the sessions collection
+        ttl: 14 * 24 * 60 * 60 // = 14 days. Default
+    }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production', // Set to true if using https
         httpOnly: true,
         sameSite: 'strict',
-        maxAge: 24000 * 60 * 60  // 1 hour
+        maxAge: 24000 * 60 * 60 // 1 hour
     }
 }));
+
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER, // Your email address
+        pass: process.env.SMTP_PASS  // Your email password
+    }
+})
+
 
 
 app.get('/', async (req, res) => {
@@ -87,7 +106,7 @@ app.get('/signup', (req, res) => {
 
 
 app.post('/signup/submit', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, email } = req.body;
 
     // Input validation
     if (!username || !password) {
@@ -99,6 +118,11 @@ app.post('/signup/submit', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Username must be between 3 and 16 characters.' });
     }
 
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Email is not valid.' });
+    }
+    
+
     // Password validation: between 4 and 30 characters
     if (password.length < 4 || password.length > 30) {
         return res.status(400).json({ success: false, message: 'Password must be between 4 and 30 characters.' });
@@ -106,9 +130,10 @@ app.post('/signup/submit', async (req, res) => {
 
     try {
         // Check if the user already exists
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: 'Username already taken.' });
+        const existingUsername = await User.findOne({ username });
+        const existingEmail = await User.findOne({ email });
+        if (existingUsername || existingEmail) {
+            return res.status(400).json({ success: false, message: 'Username or Email already taken.' });
         }
 
         // Hash the user's password
@@ -118,6 +143,7 @@ app.post('/signup/submit', async (req, res) => {
         // Create and save the new user
         const newUser = new User({
             username: username,
+            email: email,
             passwordHash: passwordHash
         });
 
@@ -283,7 +309,7 @@ app.post("/makeGuide", async (req, res) => {
         const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
         for (const sectionKey of sectionKeys) {
             const sectionIndex = sectionKey.replace('section', '').replace('H2', ''); // Extract the index
-            const sectionHeader = body[sectionKey] || "Example Header"; // Default header if empty
+            const sectionHeader = body[sectionKey];
             const paragraphs = [];
             const images = [];
             
@@ -292,7 +318,7 @@ app.post("/makeGuide", async (req, res) => {
             for (const paragraphKey of paragraphKeys) {
                 const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
                 paragraphs.push({
-                    text: body[paragraphKey] || "Lorem ipsum this was not writtum", // Default paragraph text if empty
+                    text: body[paragraphKey],
                     id: body[`section${sectionIndex}P${pIndex}Id`] || '',
                     pIndex: parseInt(pIndex)
                 });
@@ -303,25 +329,15 @@ app.post("/makeGuide", async (req, res) => {
                 const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
                 for (const imageKey of imageKeys) {
                     const file = files[imageKey];
-                    try {
-                        const uniqueFilename = await generateUniqueFilename(file.name);
-                        const filePath = path.join('./public/uploads', uniqueFilename);
-                        await file.mv(filePath);
-                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                        images.push({
-                            url: `/uploads/${uniqueFilename}`,
-                            filename: uniqueFilename,
-                            imgIndex: parseInt(imgIndex)
-                        });
-                    } catch (fileError) {
-                        console.error(`Error processing file ${file.name}:`, fileError);
-                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                        images.push({
-                            url: `https://picsum.photos/200`, // Fallback image
-                            filename: 'default-image.jpg',
-                            imgIndex: parseInt(imgIndex)
-                        });
-                    }
+                    const uniqueFilename = await generateUniqueFilename(file.name);
+                    const filePath = path.join('./public/uploads', uniqueFilename);
+                    await file.mv(filePath);
+                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                    images.push({
+                        url: `/uploads/${uniqueFilename}`,
+                        filename: uniqueFilename,
+                        imgIndex: parseInt(imgIndex)
+                    });
                 }
             }
 
@@ -330,10 +346,9 @@ app.post("/makeGuide", async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!images.some(img => img.imgIndex === parseInt(imgIndex))) {
-                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/200`; // Use fallback if empty
                     images.push({
-                        url: imageUrl,
-                        filename: imageUrl.split('/').pop() || 'default-image.jpg',
+                        url: body[imageUrlKey],
+                        filename: body[imageUrlKey].split('/').pop(),
                         imgIndex: parseInt(imgIndex)
                     });
                 }
@@ -347,11 +362,17 @@ app.post("/makeGuide", async (req, res) => {
             });
         }
 
+        // Sort paragraphs and images within each section
+        sections.forEach(section => {
+            section.paragraphs.sort((a, b) => a.pIndex - b.pIndex);
+            section.images.sort((a, b) => a.imgIndex - b.imgIndex);
+        });
+
         // Sort sections
         sections.sort((a, b) => a.index - b.index);
 
         const guide = new Guide({
-            title: title || "This needs to be changed", // Default title if empty
+            title,
             sections,
             creator: req.session.user._id
         });
@@ -447,7 +468,7 @@ app.post('/saveGuide/:id', async (req, res) => {
         const sectionKeys = Object.keys(body).filter(key => key.startsWith('section') && key.endsWith('H2'));
         for (const sectionKey of sectionKeys) {
             const sectionIndex = sectionKey.replace('section', '').replace('H2', '');
-            const sectionHeader = body[sectionKey] || "Example Header"; // Default header if empty
+            const sectionHeader = body[sectionKey];
             const newSection = {
                 header: sectionHeader,
                 paragraphs: [],
@@ -460,7 +481,7 @@ app.post('/saveGuide/:id', async (req, res) => {
             for (const paragraphKey of paragraphKeys) {
                 const pIndex = paragraphKey.replace(`section${sectionIndex}P`, '');
                 newSection.paragraphs.push({
-                    text: body[paragraphKey] || "Lorem ipsum this was not writtum", // Default paragraph text if empty
+                    text: body[paragraphKey],
                     id: body[`section${sectionIndex}P${pIndex}Id`] || '',
                     pIndex: parseInt(pIndex),
                 });
@@ -471,25 +492,15 @@ app.post('/saveGuide/:id', async (req, res) => {
                 const imageKeys = Object.keys(files).filter(key => key.startsWith(`section${sectionIndex}Img`));
                 for (const imageKey of imageKeys) {
                     const file = files[imageKey];
-                    try {
-                        const uniqueFilename = await generateUniqueFilename(file.name);
-                        const filePath = path.join('./public/uploads', uniqueFilename);
-                        await file.mv(filePath);
-                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                        newSection.images.push({
-                            url: `/uploads/${uniqueFilename}`,
-                            filename: uniqueFilename,
-                            imgIndex: parseInt(imgIndex),
-                        });
-                    } catch (fileError) {
-                        console.error(`Error processing file ${file.name}:`, fileError);
-                        const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
-                        newSection.images.push({
-                            url: `https://picsum.photos/200`, // Fallback image
-                            filename: 'default-image.jpg',
-                            imgIndex: parseInt(imgIndex),
-                        });
-                    }
+                    const uniqueFilename = await generateUniqueFilename(file.name);
+                    const filePath = path.join('./public/uploads', uniqueFilename);
+                    await file.mv(filePath);
+                    const imgIndex = imageKey.replace(`section${sectionIndex}Img`, '');
+                    newSection.images.push({
+                        url: `/uploads/${uniqueFilename}`,
+                        filename: uniqueFilename,
+                        imgIndex: parseInt(imgIndex),
+                    });
                 }
             }
 
@@ -498,10 +509,9 @@ app.post('/saveGuide/:id', async (req, res) => {
             for (const imageUrlKey of imageUrlKeys) {
                 const imgIndex = imageUrlKey.replace(`section${sectionIndex}Img`, '').replace('Url', '');
                 if (!newSection.images.some(img => img.imgIndex === parseInt(imgIndex))) {
-                    const imageUrl = body[imageUrlKey] || `https://picsum.photos/200`; // Use fallback if empty
                     newSection.images.push({
-                        url: imageUrl,
-                        filename: imageUrl.split('/').pop() || 'default-image.jpg',
+                        url: body[imageUrlKey],
+                        filename: body[imageUrlKey].split('/').pop(),
                         imgIndex: parseInt(imgIndex),
                     });
                 }
@@ -535,10 +545,7 @@ app.post('/saveGuide/:id', async (req, res) => {
         // Update only changed fields in the guide
         await Guide.findByIdAndUpdate(
             guideId,
-            { 
-                title: title || "This needs to be changed", // Default title if empty
-                sections: updatedSections 
-            },
+            { title, sections: updatedSections },
             { new: true, runValidators: true }
         );
 
@@ -713,6 +720,142 @@ app.post('/addTagToGuide', async (req, res) => {
             console.error('Error adding tags to guide:', error);
             res.status(500).json({ message: 'An error occurred while adding tags to the guide.', error });
         }}
+});
+
+app.get('/profile', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+    const user = req.session.user
+
+    res.render('profile', { user })
+})
+
+const codeExpiry = {}; // Temporary storage for verification codes
+
+app.post('/resetPassword', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+
+    const { password } = req.body;
+
+    try {
+        const user = await User.findById(req.session.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+        if (isPasswordCorrect) {
+            const email = user.email;
+
+            // Generate a secure random code
+            const code = crypto.randomInt(100000, 999999); // Generate a 6-digit code
+
+            // Store the code and its expiry time (e.g., 5 minutes)
+            codeExpiry[email] = { code, expires: Date.now() + 10 * 60 * 1000 };
+
+            const mailOptions = {
+                from: `"Brukerguides Support" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: "Code for resetting password",
+                text: `Here is your code for resetting your password: ${code}\n\nThis code will work for the next 10 minutes`
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error occurred: ' + error.message);
+                    return res.status(500).json({ success: false, message: 'Email not sent' });
+                }
+                return res.status(200).json({ success: true, messageId: info.messageId });
+            });
+        } else {
+            return res.status(400).json({ success: false, message: "Password incorrect." });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Server error." });
+    }
+});
+
+app.post('/verifyAndChange', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+
+    const { code, newPassword } = req.body; // Expecting the verification code and new password
+    // Get the user ID from the session
+    const userId = req.session.user._id;
+    
+    // Check if the user exists in the database
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Check if the code exists for this user in the temporary storage
+        if (codeExpiry[user.email]) { // Assuming you are still using email as a key
+            const storedCode = codeExpiry[user.email].code;
+            const expires = codeExpiry[user.email].expires;
+
+
+            // Validate the code and check for expiration
+            if (storedCode.toString() === code) {
+                if (Date.now() < expires) {
+                    // Hash the new password
+                    const hashedPassword = await bcrypt.hash(newPassword, 10);
+                    
+                    // Update user password in the database
+                    user.passwordHash = hashedPassword;
+                    await user.save();
+
+                    // Remove the code from memory after changing the password
+                    delete codeExpiry[user.email];
+
+                    return res.status(200).json({ success: true, message: "Password changed successfully." });
+                } else {
+                    delete codeExpiry[user.email]; // Code has expired, delete it
+                    return res.status(400).json({ success: false, message: "Code has expired." });
+                }
+            }
+        }
+
+        return res.status(400).json({ success: false, message: "Invalid code." });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Server error." });
+    }
+});
+
+
+
+app.post('/delAcc', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+    
+    const { password } = req.body;
+
+    try {
+        const user = await User.findById(req.session.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+        if (isPasswordCorrect) {
+            await User.findByIdAndDelete(req.session.user._id);
+            req.session.destroy();
+            return res.status(200).json({ success: true, message: "User deleted." });
+        } else {
+            return res.status(400).json({ success: false, message: "Incorrect password." });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Server error." });
+    }
 });
 
 
