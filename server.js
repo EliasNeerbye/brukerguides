@@ -12,6 +12,16 @@ const { ObjectId } = require('mongodb');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 
+const {OAuth2Client} = require('google-auth-library');
+const credentials = require('./cliendID.json'); // Path to your downloaded JSON file
+
+// Access the credentials from the "web" object
+const client = new OAuth2Client(
+    credentials.web.client_id,     // Use 'web' instead of 'installed'
+    credentials.web.client_secret, // Use 'web' instead of 'installed'
+    'http://localhost:4000/auth/google/callback'            // Replace this with your actual redirect URI
+);
+
 
 app.set('view engine', 'ejs');
 
@@ -858,6 +868,71 @@ app.post('/delAcc', async (req, res) => {
     }
 });
 
+app.get('/auth/google', (req, res) => {
+    const authUrl = client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+    });
+    res.redirect(authUrl);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+    const { code } = req.query;
+
+    try {
+        // Exchange code for tokens
+        const { tokens } = await client.getToken(code);
+        client.setCredentials(tokens);
+
+        // Get user info
+        const userInfoResponse = await client.request({
+            url: 'https://www.googleapis.com/oauth2/v3/userinfo'
+        });
+        const userInfo = userInfoResponse.data;
+
+        // Extract user info
+        const email = userInfo.email; // User's email
+        const username = userInfo.name; // User's name as username
+
+        // Check if the user exists in the database
+        let existingUser = await User.findOne({ email });
+
+        if (!existingUser) {
+            // If the user does not exist, create a new user
+            const generatedPassword = require('crypto').randomBytes(8).toString('hex');
+
+            existingUser = new User({
+                username,
+                email,
+                passwordHash: await bcrypt.hash(generatedPassword, 10) // Hash the generated password
+            });
+
+            await existingUser.save();
+
+            // Send a welcome email
+            const mailOptions = {
+                from: `"Brukerguides Support" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: "Thanks for signing up with Google",
+                text: `You signed up with Google, and we generated a password for you. Please feel free to change this: ${generatedPassword}`
+            };
+
+            await transporter.sendMail(mailOptions);
+        }
+
+        // Automatically log in the user
+        req.session.user = {
+            _id: existingUser._id,
+            username: existingUser.username
+        };
+
+        // Redirect to the profile or home page
+        res.redirect('/profile');
+    } catch (error) {
+        console.error('Error during authentication:', error);
+        res.status(500).send('Authentication failed. Please try again.');
+    }
+});
 
 
 // 404 Error Handler (catch-all for unhandled routes)
