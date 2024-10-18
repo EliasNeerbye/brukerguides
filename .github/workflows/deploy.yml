@@ -3,14 +3,27 @@ name: Deploy to Self-Hosted Server
 on:
   push:
     branches:
-      - main # Trigger on pushes to the "main" branch
+      - main
+  workflow_dispatch:  # Allows manual triggers
 
 jobs:
   deploy:
-    runs-on: self-hosted # Ensure this runs on your self-hosted runner
+    runs-on: self-hosted
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
+
+      - name: Debug Information
+        run: |
+          echo "Workflow is running!"
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -R
+          echo "Git status:"
+          git status
+          echo "GitHub event name: ${{ github.event_name }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "Runner OS: ${{ runner.os }}"
 
       - name: Pull Latest Code
         run: git pull origin main
