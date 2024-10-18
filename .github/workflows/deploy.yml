@@ -3,26 +3,21 @@ name: Deploy to Self-Hosted Server
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the "main" branch
+      - main # Trigger on pushes to the "main" branch
 
 jobs:
   deploy:
-    runs-on: self-hosted  # Ensure this runs on your self-hosted runner
-
+    runs-on: self-hosted # Ensure this runs on your self-hosted runner
     steps:
-      - name: Pull Latest Code from Git
-        run: |
-          cd ~/brugerguides
-          git pull origin main
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-      # Install updated dependencies (if any)
+      - name: Pull Latest Code
+        run: git pull origin main
+
       - name: Install Dependencies
-        run: |
-          cd ~/brugerguides
-          npm install
+        run: npm install
 
-      # Optional: Notify of successful deployment
       - name: Notify of Successful Deployment
         if: success()
-        run: |
-          echo "Deployment successful!"
+        run: echo "Deployment successful!"
