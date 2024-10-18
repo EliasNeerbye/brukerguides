@@ -29,7 +29,6 @@ function createTag() {
             if (response.ok) {
                 // Success: display success message and optionally clear the form fields
                 alertMsg.innerText = 'Tag created successfully!';
-                console.log('Response:', data);
 
                 // Optionally clear the input fields after successful tag creation
                 document.getElementById("makeTag").value = '';
