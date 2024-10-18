@@ -19,7 +19,7 @@ const credentials = require('./cliendID.json'); // Path to your downloaded JSON 
 const client = new OAuth2Client(
     credentials.web.client_id,     // Use 'web' instead of 'installed'
     credentials.web.client_secret, // Use 'web' instead of 'installed'
-    'http://localhost:4000/auth/google/callback'            // Replace this with your actual redirect URI
+    `http://${process.env.GOOLEREDIRECT}:4000/auth/google/callback`            // Replace this with your actual redirect URI
 );
 
 
