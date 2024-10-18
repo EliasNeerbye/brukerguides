@@ -4,33 +4,24 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allows manual triggers
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Debug Information
+      - name: Update Repository and Install Dependencies
         run: |
-          echo "Workflow is running!"
-          echo "Current directory: $(pwd)"
-          echo "Repository contents:"
-          ls -R
-          echo "Git status:"
-          git status
-          echo "GitHub event name: ${{ github.event_name }}"
-          echo "GitHub ref: ${{ github.ref }}"
-          echo "Runner OS: ${{ runner.os }}"
+          cd ~/brukerguides  # Adjust this path if necessary
+          git pull origin main
+          npm install
 
-      - name: Pull Latest Code
-        run: git pull origin main
+      - name: Verify Deployment
+        run: |
+          cd ~/brukerguides
+          echo "Latest commit in the repository:"
+          git log -1 --oneline
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Notify of Successful Deployment
+      - name: Notify of Deployment Result
         if: success()
-        run: echo "Deployment successful!"
+        run: echo "Repository updated and dependencies installed."
